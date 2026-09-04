@@ -1,0 +1,67 @@
+/* ============================================================
+   estudiante3-emanuel.css  —  CAPA DE EMANUEL CARDONA (Ejemplo)
+   Prefijo de esta capa: .e3-
+   ============================================================ */
+
+/* La diapositiva del árbol usa toda la altura disponible */
+.e3-slide-arbol > .slide-inner{ margin:0; flex:1 1 auto; min-height:0 }
+.e3-slide-arbol .slide-cab{ margin-bottom:12px }
+.e3-arbol-zona{
+  flex:1 1 auto; min-height:180px; display:flex; flex-direction:column; gap:10px;
+}
+.e3-arbol-zona .arbol-caja{ flex:1 1 auto }
+
+/* Palabra de ejemplo en grande */
+.e3-palabra{
+  display:flex; gap:5px; flex-wrap:wrap; justify-content:center;
+  font-family:var(--mono);
+}
+.e3-letra{
+  width:38px; height:46px; border-radius:10px;
+  display:grid; place-items:center;
+  font-size:1.25rem; font-weight:800;
+  background:var(--superficie); border:1px solid var(--borde); color:var(--texto);
+  transition: all .25s ease;
+}
+.e3-letra[data-c="A"]{ background:rgba(52,211,153,.20); border-color:#34d399; color:#6ee7b7 }
+.e3-letra[data-c="B"]{ background:rgba(96,165,250,.18); border-color:#60a5fa; color:#93c5fd }
+.e3-letra[data-c="R"]{ background:rgba(167,139,250,.18); border-color:#a78bfa; color:#c4b5fd }
+.e3-letra[data-c="C"]{ background:rgba(251,191,36,.18); border-color:#fbbf24; color:#fcd34d }
+.e3-letra[data-c="D"]{ background:rgba(248,113,113,.18); border-color:#f87171; color:#fca5a5 }
+
+/* Cola de prioridad dibujada como fichas */
+.e3-cola{ display:flex; gap:8px; flex-wrap:wrap; align-items:center }
+.e3-ficha{
+  display:flex; align-items:center; gap:7px;
+  padding:6px 11px; border-radius:9px;
+  background:var(--superficie); border:1px solid var(--borde);
+  font-family:var(--mono); font-size:.85rem;
+}
+.e3-ficha b{ color:var(--c3); font-weight:800 }
+.e3-ficha small{ color:var(--texto-tenue) }
+.e3-flecha{ color:var(--texto-tenue); font-size:.9rem }
+
+/* Tabla de códigos resultante */
+.e3-codigo-bin{
+  font-family:var(--mono); font-weight:800; letter-spacing:.13em;
+  color:#6ee7b7; font-size:.95rem;
+}
+.e3-ahorro{
+  display:flex; align-items:baseline; gap:8px;
+  font-family:var(--mono); font-weight:800;
+}
+
+/* Cinta de bits del mensaje codificado */
+.e3-cinta{
+  background:rgba(0,0,0,.3); border:1px solid var(--borde);
+  border-left:3px solid var(--c3); border-radius:var(--radio-sm);
+  padding:14px 16px;
+}
+.e3-cinta-titulo{
+  font-size:.72rem; letter-spacing:.1em; text-transform:uppercase;
+  color:var(--texto-tenue); margin-bottom:11px;
+}
+.e3-bits-total{
+  margin-top:12px; font-family:var(--mono); font-size:.83rem; color:var(--texto-suave);
+}
+.e3-bits-total b{ color:var(--c3) }

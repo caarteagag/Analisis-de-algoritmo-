@@ -1,0 +1,60 @@
+/* ============================================================
+   estudiante1-carlos.css  —  CAPA DE CARLOS ARTEAGA (Greedy)
+   Todo lo de esta capa va con el prefijo .e1-
+   ============================================================ */
+
+/* --- Diagrama de decisiones voraces vs. óptimo --- */
+.e1-diagrama{
+  background: rgba(0,0,0,.22);
+  border:1px solid var(--borde); border-radius:var(--radio);
+  padding:14px; display:flex; flex-direction:column; gap:10px;
+}
+.e1-svg{ width:100%; height:auto; max-height:44vh; display:block }
+
+.e1-arista{ stroke:rgba(255,255,255,.16); stroke-width:2; fill:none }
+.e1-arista--greedy{ stroke:var(--c1); stroke-width:4 }
+.e1-arista--optimo{ stroke:#34d399; stroke-width:3; stroke-dasharray:7 6 }
+
+.e1-nodo circle{ fill:rgba(255,255,255,.05); stroke:rgba(255,255,255,.28); stroke-width:2 }
+.e1-nodo text{
+  font-family:var(--mono); font-size:16px; font-weight:800;
+  fill:#dbe3ff; text-anchor:middle; dominant-baseline:central;
+}
+.e1-nodo--greedy circle{ fill:rgba(34,211,238,.18); stroke:var(--c1); stroke-width:3 }
+.e1-nodo--greedy text{ fill:#a5f3fc }
+.e1-nodo--optimo circle{ fill:rgba(52,211,153,.16); stroke:#34d399; stroke-width:3 }
+.e1-nodo--optimo text{ fill:#6ee7b7 }
+.e1-etiqueta{
+  font-family:var(--fuente); font-size:12px; font-weight:700;
+  text-anchor:middle; fill:var(--texto-tenue);
+}
+
+.e1-leyenda{ display:flex; gap:18px; flex-wrap:wrap; justify-content:center; font-size:.8rem }
+.e1-leyenda span{ display:flex; align-items:center; gap:7px; color:var(--texto-suave) }
+.e1-leyenda i{ width:16px; height:3px; border-radius:2px; display:inline-block }
+.e1-leyenda .i-greedy{ background:var(--c1) }
+.e1-leyenda .i-optimo{ background:#34d399 }
+
+/* --- Tarjeta de requisitos teóricos --- */
+.e1-requisito{
+  display:flex; gap:12px; align-items:flex-start;
+  padding:12px 14px; border-radius:var(--radio-sm);
+  background: var(--superficie); border:1px solid var(--borde);
+}
+.e1-requisito b{ display:block; font-size:.92rem; margin-bottom:3px }
+.e1-requisito p{ font-size:.84rem; color:var(--texto-suave); line-height:1.5 }
+.e1-requisito-ico{ font-size:1.25rem; line-height:1 }
+
+/* --- Comparativa Huffman greedy: 3 columnas de check --- */
+.e1-check{
+  display:flex; gap:12px; align-items:flex-start;
+  padding:14px 16px; border-radius:var(--radio-sm);
+  background:rgba(34,211,238,.07); border:1px solid rgba(34,211,238,.3);
+}
+.e1-check-ico{
+  flex:none; width:26px; height:26px; border-radius:50%;
+  display:grid; place-items:center; font-size:.8rem; font-weight:900;
+  background:var(--c1); color:#06202a;
+}
+.e1-check b{ display:block; font-size:.92rem; margin-bottom:3px }
+.e1-check p{ font-size:.84rem; color:var(--texto-suave); line-height:1.5 }

@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Algoritmos Greedy · Huffman | Análisis de Algoritmos</title>
+
+<!-- ===== CAPA COMÚN (equipo) ===== -->
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/componentes.css">
+<link rel="stylesheet" href="css/portada.css">
+
+<!-- ===== CAPA DE CADA ESTUDIANTE ===== -->
+<link rel="stylesheet" href="css/estudiante1-carlos.css">
+<link rel="stylesheet" href="css/estudiante2-ivan.css">
+<link rel="stylesheet" href="css/estudiante3-emanuel.css">
+<link rel="stylesheet" href="css/estudiante4-mauricio.css">
+</head>
+<body>
+
+<div id="app">
+
+  <header class="barra-top">
+    <div class="marca">
+      <span class="marca-punto"></span>
+      <span>Análisis de Algoritmos</span>
+      <span class="marca-sep">/</span>
+      <span class="marca-tema">Greedy &amp; Huffman</span>
+    </div>
+
+    <div class="chip-estudiante" id="chipEstudiante">
+      <span class="chip-avatar" id="chipAvatar">EQ</span>
+      <span class="chip-texto">
+        <b id="chipNombre">Equipo</b>
+        <small id="chipSeccion">Portada</small>
+      </span>
+    </div>
+
+    <div class="contador"><span id="contadorActual">1</span><span class="contador-sep">/</span><span id="contadorTotal">14</span></div>
+  </header>
+
+  <div class="progreso"><div class="progreso-fill" id="progresoFill"></div></div>
+
+  <main id="escenario" class="escenario"><!-- las diapositivas se inyectan aquí --></main>
+
+  <footer class="nav">
+    <button class="btn btn-nav" id="btnAnterior" title="Flecha izquierda">
+      <span aria-hidden="true">←</span> Anterior
+    </button>
+
+    <div class="puntos" id="puntos"></div>
+
+    <div class="nav-derecha">
+      <button class="btn btn-nav btn-primario" id="btnSiguiente" title="Flecha derecha / Espacio">
+        Siguiente <span aria-hidden="true">→</span>
+      </button>
+    </div>
+  </footer>
+
+</div>
+
+<!-- ===== MOTOR + LIBRERÍAS (capa común) ===== -->
+<script src="js/presentacion.js"></script>
+<script src="js/lib/huffman.js"></script>
+
+<!-- ===== CAPA DE CADA ESTUDIANTE (el orden aquí no importa: cada capa declara su 'orden') ===== -->
+<script src="js/slides/00-portada.js"></script>
+<script src="js/slides/01-carlos-greedy.js"></script>
+<script src="js/slides/02-ivan-huffman.js"></script>
+<script src="js/slides/03-emanuel-ejemplo.js"></script>
+<script src="js/slides/04-mauricio-analisis.js"></script>
+
+<script>Presentacion.iniciar();</script>
+</body>
+</html>

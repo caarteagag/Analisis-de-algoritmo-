@@ -1,0 +1,72 @@
+/* ============================================================
+   estudiante4-mauricio.css  —  CAPA DE MAURICIO AGUDELO
+   Tema: complejidad, aplicaciones y conclusiones
+   Prefijo de esta capa: .e4-
+   ============================================================ */
+
+/* --- Gráfica de crecimiento --- */
+.e4-grafica{
+  background:rgba(0,0,0,.24); border:1px solid var(--borde);
+  border-radius:var(--radio); padding:14px;
+}
+.e4-svg{ width:100%; height:auto; display:block }
+.e4-eje{ stroke:rgba(255,255,255,.16); stroke-width:1 }
+.e4-guia{ stroke:rgba(255,255,255,.06); stroke-width:1 }
+.e4-curva{ fill:none; stroke-width:3; stroke-linecap:round; stroke-linejoin:round }
+.e4-curva--n2{ stroke:#f87171 }
+.e4-curva--nlogn{ stroke:var(--c4) }
+.e4-curva--n{ stroke:#34d399 }
+.e4-texto-eje{
+  font-family:var(--fuente); font-size:11px; fill:var(--texto-tenue); text-anchor:middle;
+}
+.e4-curva-nombre{ font-family:var(--mono); font-size:12px; font-weight:800 }
+
+/* --- Desglose de complejidad --- */
+.e4-desglose{ display:flex; flex-direction:column; gap:9px }
+.e4-op{
+  display:grid; grid-template-columns:1fr auto; align-items:center; gap:12px;
+  padding:11px 14px; border-radius:var(--radio-sm);
+  background:var(--superficie); border:1px solid var(--borde);
+}
+.e4-op-txt{ font-size:.86rem; color:var(--texto-suave); line-height:1.4 }
+.e4-op-txt b{ color:var(--texto); display:block; font-size:.9rem }
+.e4-op-costo{
+  font-family:var(--mono); font-size:.85rem; font-weight:800;
+  padding:4px 10px; border-radius:7px;
+  background:rgba(251,191,36,.15); border:1px solid rgba(251,191,36,.45); color:#fcd34d;
+  white-space:nowrap;
+}
+.e4-total{
+  display:flex; align-items:center; justify-content:space-between; gap:14px;
+  padding:15px 18px; border-radius:var(--radio);
+  background:rgba(251,191,36,.1); border:1px solid rgba(251,191,36,.45);
+}
+.e4-total span{ font-size:.86rem; color:var(--texto-suave) }
+.e4-total b{
+  font-family:var(--mono); font-size:clamp(1.1rem,2.4vw,1.7rem);
+  font-weight:900; color:var(--c4);
+}
+
+/* --- Bloque de conclusiones --- */
+.e4-conclusiones{ display:flex; flex-direction:column; gap:11px }
+.e4-conclusion{
+  display:flex; gap:13px; align-items:flex-start;
+  padding:13px 16px; border-radius:var(--radio-sm);
+  background:var(--superficie); border:1px solid var(--borde);
+  border-left:3px solid var(--c4);
+}
+.e4-conclusion-ico{ font-size:1.15rem; line-height:1.2 }
+.e4-conclusion-txt{ font-size:.89rem; line-height:1.55; color:var(--texto-suave) }
+.e4-conclusion-txt b{ color:var(--texto) }
+
+/* --- Cierre / agradecimiento --- */
+.e4-cierre{
+  text-align:center; padding:20px;
+  border-radius:var(--radio);
+  background:linear-gradient(135deg, rgba(251,191,36,.10), rgba(167,139,250,.10));
+  border:1px solid var(--borde-fuerte);
+}
+.e4-cierre h3{
+  font-size:clamp(1.1rem,2.4vw,1.6rem); font-weight:800; margin-bottom:6px;
+}
+.e4-cierre p{ font-size:.88rem; color:var(--texto-suave) }

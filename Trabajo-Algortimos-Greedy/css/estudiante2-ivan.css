@@ -1,0 +1,73 @@
+/* ============================================================
+   estudiante2-ivan.css  —  CAPA DE IVÁN MORALES (Huffman)
+   Prefijo de esta capa: .e2-
+   ============================================================ */
+
+/* --- Comparación de tamaño: código fijo vs Huffman --- */
+.e2-comparacion{ display:flex; flex-direction:column; gap:16px }
+.e2-fila{ display:flex; flex-direction:column; gap:7px }
+.e2-fila-cab{
+  display:flex; justify-content:space-between; align-items:baseline;
+  font-size:.84rem; color:var(--texto-suave);
+}
+.e2-fila-cab b{ color:var(--texto) }
+.e2-fila-cab span{ font-family:var(--mono); font-size:.9rem }
+.e2-pista{ height:30px; background:rgba(255,255,255,.055); border-radius:10px; overflow:hidden }
+.e2-relleno{
+  height:100%; width:0; border-radius:10px;
+  display:flex; align-items:center; justify-content:flex-end;
+  padding-right:11px; font-family:var(--mono); font-size:.78rem; font-weight:700; color:#080d1a;
+  transition: width 1s cubic-bezier(.22,1,.36,1);
+}
+.e2-relleno--fijo{ background:linear-gradient(90deg,#475569,#64748b); color:#e2e8f0 }
+.e2-relleno--huff{ background:linear-gradient(90deg,var(--c2),#f0abfc) }
+
+/* --- Chips de asignación de códigos --- */
+.e2-chips{ display:flex; flex-direction:column; gap:10px }
+.e2-chip{
+  display:grid; grid-template-columns:38px 1fr auto; align-items:center; gap:12px;
+  padding:10px 13px; border-radius:var(--radio-sm);
+  background:var(--superficie); border:1px solid var(--borde);
+}
+.e2-chip-letra{
+  font-family:var(--mono); font-size:1.15rem; font-weight:900; text-align:center;
+  color:var(--c2);
+}
+.e2-chip-txt{ font-size:.83rem; color:var(--texto-suave); line-height:1.4 }
+.e2-chip-cod{
+  font-family:var(--mono); font-size:.92rem; font-weight:800; letter-spacing:.1em;
+  padding:5px 10px; border-radius:8px;
+  background:rgba(167,139,250,.16); border:1px solid rgba(167,139,250,.45); color:#ddd6fe;
+}
+.e2-chip[data-tam="corto"]{ border-left:3px solid #34d399 }
+.e2-chip[data-tam="medio"]{ border-left:3px solid var(--c2) }
+.e2-chip[data-tam="largo"]{ border-left:3px solid #f87171 }
+
+/* --- Rejilla de aplicaciones --- */
+.e2-apps{ display:grid; grid-template-columns:repeat(3,1fr); gap:12px }
+.e2-app{
+  background:var(--superficie); border:1px solid var(--borde);
+  border-radius:var(--radio); padding:15px;
+  display:flex; flex-direction:column; gap:7px;
+  transition:transform .25s ease, border-color .25s ease;
+}
+.e2-app:hover{ transform:translateY(-4px); border-color:rgba(167,139,250,.5) }
+.e2-app-ico{ font-size:1.5rem; line-height:1 }
+.e2-app-nombre{ font-size:.93rem; font-weight:700 }
+.e2-app-txt{ font-size:.8rem; color:var(--texto-suave); line-height:1.45 }
+@media (max-width:950px){ .e2-apps{ grid-template-columns:repeat(2,1fr) } }
+@media (max-width:560px){ .e2-apps{ grid-template-columns:1fr } }
+
+/* --- Propiedad de prefijo: bien vs mal --- */
+.e2-prefijo{ display:grid; grid-template-columns:1fr 1fr; gap:14px }
+.e2-caso{ border-radius:var(--radio); padding:14px 16px; border:1px solid }
+.e2-caso h5{ font-size:.86rem; margin-bottom:9px; display:flex; align-items:center; gap:7px }
+.e2-caso code{
+  display:block; font-family:var(--mono); font-size:.85rem; line-height:1.9; color:#dbe3ff;
+}
+.e2-caso p{ margin-top:9px; font-size:.8rem; color:var(--texto-suave); line-height:1.5 }
+.e2-caso--mal{ background:rgba(248,113,113,.07); border-color:rgba(248,113,113,.32) }
+.e2-caso--mal h5{ color:#f87171 }
+.e2-caso--bien{ background:rgba(52,211,153,.07); border-color:rgba(52,211,153,.32) }
+.e2-caso--bien h5{ color:#34d399 }
+@media (max-width:950px){ .e2-prefijo{ grid-template-columns:1fr } }

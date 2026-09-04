@@ -1,0 +1,239 @@
+/* ============================================================
+   base.css - CAPA COMUN DEL EQUIPO
+   Motor visual: layout, navegacion, tipografia y variables.
+   Para agregar contenido no se toca este archivo:
+   cada estudiante trabaja en su propio css + su propio js.
+   ============================================================ */
+
+:root{
+  --fondo:        #070b16;
+  --fondo-2:      #0d1426;
+  --superficie:   rgba(255,255,255,.045);
+  --superficie-2: rgba(255,255,255,.075);
+  --borde:        rgba(255,255,255,.10);
+  --borde-fuerte: rgba(255,255,255,.20);
+
+  --texto:        #eef2ff;
+  --texto-suave:  #a9b4d0;
+  --texto-tenue:  #6b7799;
+
+  --c1: #22d3ee;   /* Carlos   - Greedy   */
+  --c2: #a78bfa;   /* Ivan     - Huffman  */
+  --c3: #34d399;   /* Emanuel  - Ejemplo  */
+  --c4: #fbbf24;   /* Mauricio - Analisis */
+  --c0: #60a5fa;   /* Equipo   - Portada  */
+
+  --acento: var(--c0);                    /* el motor lo cambia por diapositiva */
+  --acento-suave: rgba(96,165,250,.15);
+
+  --radio: 18px;
+  --radio-sm: 12px;
+  --sombra: 0 18px 50px rgba(0,0,0,.45);
+  --fuente: "Segoe UI", Inter, system-ui, -apple-system, Roboto, Helvetica, Arial, sans-serif;
+  --mono: "JetBrains Mono", "Cascadia Code", Consolas, "Courier New", monospace;
+
+  --alto-top: 62px;
+  --alto-nav: 74px;
+}
+
+*{ box-sizing:border-box; margin:0; padding:0; }
+
+html,body{ height:100%; }
+
+body{
+  font-family: var(--fuente);
+  color: var(--texto);
+  background: var(--fondo);
+  overflow:hidden;
+  -webkit-font-smoothing:antialiased;
+}
+
+/* Halos de color de fondo (cambian de tono segun la seccion) */
+body::before,
+body::after{
+  content:"";
+  position:fixed; z-index:0;
+  width:60vw; height:60vw; border-radius:50%;
+  filter: blur(120px); opacity:.20;
+  transition: background .8s ease, opacity .8s ease;
+  pointer-events:none;
+}
+body::before{ top:-22vw; left:-14vw; background: var(--acento); }
+body::after { bottom:-26vw; right:-16vw; background: var(--c2); opacity:.13; }
+
+#app{
+  position:relative; z-index:1;
+  height:100vh;
+  display:grid;
+  grid-template-rows: var(--alto-top) 4px 1fr var(--alto-nav);
+}
+
+/* ---------------- Barra superior ---------------- */
+.barra-top{
+  display:flex; align-items:center; justify-content:space-between;
+  gap:16px; padding:0 clamp(14px, 3vw, 40px);
+  border-bottom:1px solid var(--borde);
+  background: rgba(7,11,22,.55);
+  backdrop-filter: blur(14px);
+}
+
+.marca{
+  display:flex; align-items:center; gap:10px;
+  font-size:.82rem; letter-spacing:.06em; text-transform:uppercase;
+  color: var(--texto-suave); white-space:nowrap;
+}
+.marca-punto{
+  width:9px; height:9px; border-radius:50%;
+  background: var(--acento);
+  box-shadow:0 0 0 4px var(--acento-suave);
+  transition: background .5s ease, box-shadow .5s ease;
+}
+.marca-sep{ color: var(--texto-tenue); }
+.marca-tema{ color: var(--texto); font-weight:600; }
+
+.chip-estudiante{
+  display:flex; align-items:center; gap:10px;
+  padding:6px 14px 6px 6px;
+  border:1px solid var(--borde); border-radius:999px;
+  background: var(--superficie);
+}
+.chip-avatar{
+  width:30px; height:30px; border-radius:50%;
+  display:grid; place-items:center;
+  font-size:.72rem; font-weight:800;
+  color:#0a0f1e; background: var(--acento);
+  transition: background .4s ease;
+}
+.chip-texto{ display:flex; flex-direction:column; line-height:1.15; }
+.chip-texto b{ font-size:.83rem; }
+.chip-texto small{ font-size:.68rem; color:var(--texto-tenue); text-transform:uppercase; letter-spacing:.07em; }
+
+.contador{ font-family:var(--mono); font-size:.85rem; color:var(--texto-suave); white-space:nowrap; }
+.contador-sep{ color:var(--texto-tenue); margin:0 3px; }
+#contadorActual{ color:var(--acento); font-weight:700; }
+
+/* ---------------- Barra de progreso ---------------- */
+.progreso{ background: rgba(255,255,255,.06); overflow:hidden; }
+.progreso-fill{
+  height:100%; width:0%;
+  background: linear-gradient(90deg, var(--acento), var(--c2));
+  border-radius:0 4px 4px 0;
+  transition: width .45s cubic-bezier(.4,0,.2,1), background .5s ease;
+  box-shadow:0 0 14px var(--acento);
+}
+
+/* ---------------- Escenario / diapositivas ---------------- */
+.escenario{ position:relative; overflow:hidden; }
+
+.slide{
+  position:absolute; inset:0;
+  display:flex; flex-direction:column;
+  padding: clamp(18px, 3.4vh, 40px) clamp(20px, 5vw, 78px);
+  opacity:0; visibility:hidden;
+  transform: translateY(22px) scale(.99);
+  transition: opacity .45s ease, transform .45s ease, visibility .45s;
+  overflow-y:auto; overflow-x:hidden;
+}
+.slide.activa{ opacity:1; visibility:visible; transform:none; }
+
+/* Envoltorio: centra en vertical con margin auto (que solo absorbe espacio
+   libre POSITIVO). Asi, cuando el contenido no cabe, se apoya arriba y se
+   puede hacer scroll, en vez de recortarse por el borde superior. */
+.slide-inner{
+  width:100%; margin:auto 0;
+  display:flex; flex-direction:column;
+}
+
+/* Aparicion escalonada de los bloques marcados con .anim */
+.slide.activa .anim{ animation: subir .55s cubic-bezier(.22,1,.36,1) backwards; }
+.slide.activa .anim:nth-child(1){ animation-delay:.05s }
+.slide.activa .anim:nth-child(2){ animation-delay:.13s }
+.slide.activa .anim:nth-child(3){ animation-delay:.21s }
+.slide.activa .anim:nth-child(4){ animation-delay:.29s }
+.slide.activa .anim:nth-child(5){ animation-delay:.37s }
+.slide.activa .anim:nth-child(6){ animation-delay:.45s }
+@keyframes subir{ from{ opacity:0; transform:translateY(20px) } to{ opacity:1; transform:none } }
+
+/* Encabezado de diapositiva */
+.slide-cab{ margin-bottom: clamp(14px, 2.4vh, 26px); }
+.slide-etiqueta{
+  display:inline-flex; align-items:center; gap:8px;
+  padding:5px 13px; border-radius:999px;
+  background: var(--acento-suave);
+  border:1px solid var(--acento);
+  color: var(--acento);
+  font-size:.71rem; font-weight:700; letter-spacing:.12em; text-transform:uppercase;
+  margin-bottom:12px;
+}
+.slide-titulo{
+  font-size: clamp(1.55rem, 3.4vw, 2.7rem);
+  font-weight:800; letter-spacing:-.02em; line-height:1.12;
+}
+.slide-titulo em{ font-style:normal; color:var(--acento); }
+.slide-subtitulo{
+  margin-top:8px; max-width:74ch;
+  font-size: clamp(.92rem, 1.35vw, 1.06rem);
+  color: var(--texto-suave); line-height:1.55;
+}
+
+/* ---------------- Navegacion inferior ---------------- */
+.nav{
+  display:flex; align-items:center; justify-content:space-between; gap:16px;
+  padding:0 clamp(14px, 3vw, 40px);
+  border-top:1px solid var(--borde);
+  background: rgba(7,11,22,.55);
+  backdrop-filter: blur(14px);
+}
+.nav-derecha{ display:flex; align-items:center; gap:10px; }
+
+.btn{
+  font-family:inherit; font-size:.87rem; font-weight:600;
+  display:inline-flex; align-items:center; gap:8px;
+  padding:10px 18px; border-radius:11px; cursor:pointer;
+  border:1px solid var(--borde); background:var(--superficie); color:var(--texto);
+  transition: all .18s ease;
+}
+.btn:hover:not(:disabled){ background:var(--superficie-2); border-color:var(--borde-fuerte); transform:translateY(-1px); }
+.btn:disabled{ opacity:.3; cursor:not-allowed; }
+.btn-primario{
+  background: var(--acento); border-color: var(--acento); color:#080d1a; font-weight:700;
+  box-shadow:0 6px 22px var(--acento-suave);
+}
+.btn-primario:hover:not(:disabled){ filter:brightness(1.12); }
+.btn-ghost{ background:transparent; }
+
+.puntos{ display:flex; align-items:center; gap:6px; flex-wrap:wrap; justify-content:center; }
+.punto{
+  width:9px; height:9px; border-radius:50%; cursor:pointer;
+  background: rgba(255,255,255,.16); border:none; padding:0;
+  transition: all .25s ease;
+}
+.punto:hover{ transform:scale(1.35); background:rgba(255,255,255,.42); }
+.punto.activo{ width:26px; border-radius:5px; background:var(--acento); }
+
+/* ---------------- Utilidades de rejilla ---------------- */
+.grid{ display:grid; gap: clamp(12px, 1.6vw, 20px); }
+.g2{ grid-template-columns: repeat(2, 1fr); }
+.g3{ grid-template-columns: repeat(3, 1fr); }
+.g4{ grid-template-columns: repeat(4, 1fr); }
+.g-2-1{ grid-template-columns: 1.35fr 1fr; align-items:start; }
+.g-1-2{ grid-template-columns: 1fr 1.35fr; align-items:start; }
+.centro{ text-align:center; }
+.mono{ font-family: var(--mono); }
+.acento{ color: var(--acento); }
+
+@media (max-width: 950px){
+  .g2,.g3,.g4,.g-2-1,.g-1-2{ grid-template-columns:1fr; }
+  .chip-texto small{ display:none; }
+  .marca-tema{ display:none; }
+}
+@media (max-width: 620px){
+  .marca span:not(.marca-punto){ display:none; }
+  .puntos{ display:none; }
+  .btn{ padding:9px 13px; font-size:.8rem; }
+}
+
+@media print{
+  .barra-top,.nav,.progreso{ display:none }
+  .slide{ position:relative; opacity:1; visibility:visible; page-break-after:always }
+}

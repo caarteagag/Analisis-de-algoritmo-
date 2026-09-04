@@ -1,0 +1,242 @@
+/* ============================================================
+   componentes.css - CAPA COMUN DEL EQUIPO
+   Piezas reutilizables por las 4 capas: tarjetas, listas,
+   pasos, tablas, barras, codigo y el arbol de Huffman en SVG.
+   ============================================================ */
+
+/* ---------------- Tarjeta ---------------- */
+.card{
+  background: var(--superficie);
+  border:1px solid var(--borde);
+  border-radius: var(--radio);
+  padding: clamp(14px, 1.8vw, 24px);
+  transition: transform .25s ease, border-color .25s ease, background .25s ease;
+}
+.card:hover{ transform:translateY(-3px); border-color:var(--borde-fuerte); background:var(--superficie-2); }
+.card-icono{
+  width:40px; height:40px; border-radius:11px;
+  display:grid; place-items:center; font-size:1.15rem;
+  background: var(--acento-suave); border:1px solid var(--acento);
+  margin-bottom:12px;
+}
+.card-titulo{ font-size:1rem; font-weight:700; margin-bottom:6px; }
+.card-texto{ font-size:.88rem; line-height:1.6; color:var(--texto-suave); }
+.card--acento{ border-color:var(--acento); background:var(--acento-suave); }
+
+/* Tarjeta grande de dato / metrica */
+.metrica{
+  background: var(--superficie); border:1px solid var(--borde);
+  border-radius: var(--radio); padding:clamp(14px,1.8vw,22px); text-align:center;
+}
+.metrica-valor{
+  font-family:var(--mono); font-weight:800; line-height:1;
+  font-size: clamp(1.6rem, 3.4vw, 2.6rem); color:var(--acento);
+}
+.metrica-etiqueta{
+  margin-top:8px; font-size:.75rem; letter-spacing:.08em;
+  text-transform:uppercase; color:var(--texto-tenue);
+}
+.metrica-pie{ margin-top:6px; font-size:.82rem; color:var(--texto-suave); }
+
+/* ---------------- Listas ---------------- */
+.lista{ list-style:none; display:flex; flex-direction:column; gap:11px; }
+.lista li{
+  display:flex; gap:11px; align-items:flex-start;
+  font-size:.93rem; line-height:1.55; color:var(--texto-suave);
+}
+.lista li b{ color:var(--texto); }
+.lista li::before{
+  content:"▸"; color:var(--acento); font-size:.9rem; line-height:1.5; flex:none;
+}
+.lista--ok li::before{ content:"✓"; color:#34d399 }
+.lista--no li::before{ content:"✕"; color:#f87171 }
+
+/* ---------------- Pasos numerados ---------------- */
+.pasos{ display:flex; flex-direction:column; gap:12px; counter-reset: paso; }
+.paso{
+  display:flex; gap:14px; align-items:flex-start;
+  background: var(--superficie); border:1px solid var(--borde);
+  border-radius: var(--radio-sm); padding:13px 16px;
+}
+.paso-num{
+  flex:none; width:30px; height:30px; border-radius:9px;
+  display:grid; place-items:center;
+  font-family:var(--mono); font-weight:800; font-size:.9rem;
+  background: var(--acento); color:#080d1a;
+}
+.paso-txt{ font-size:.9rem; line-height:1.55; color:var(--texto-suave); }
+.paso-txt b{ color:var(--texto); display:block; margin-bottom:2px; font-size:.95rem; }
+
+/* Pasos en fila (horizontal) */
+.pasos-fila{ display:grid; grid-template-columns:repeat(4,1fr); gap:12px; }
+.pasos-fila .paso{ flex-direction:column; align-items:flex-start; gap:9px; }
+@media (max-width: 950px){ .pasos-fila{ grid-template-columns:1fr 1fr } }
+
+/* ---------------- Bloques de codigo / pseudocodigo ---------------- */
+.codigo{
+  font-family: var(--mono); font-size:.84rem; line-height:1.75;
+  background: rgba(0,0,0,.35); border:1px solid var(--borde);
+  border-left:3px solid var(--acento);
+  border-radius: var(--radio-sm); padding:15px 18px;
+  color:#cbd5f5; overflow-x:auto; white-space:pre;
+}
+.codigo .kw{ color: var(--acento); font-weight:700 }
+.codigo .cm{ color: var(--texto-tenue); font-style:italic }
+
+.pill{
+  display:inline-block; padding:3px 10px; border-radius:7px;
+  font-family:var(--mono); font-size:.82rem; font-weight:700;
+  background: var(--acento-suave); color:var(--acento); border:1px solid var(--acento);
+}
+.pill--gris{ background:var(--superficie); color:var(--texto-suave); border-color:var(--borde) }
+
+/* ---------------- Tablas ---------------- */
+.tabla{ width:100%; border-collapse:collapse; font-size:.88rem; }
+.tabla th{
+  text-align:left; padding:9px 12px; font-size:.71rem;
+  letter-spacing:.09em; text-transform:uppercase; color:var(--texto-tenue);
+  border-bottom:1px solid var(--borde-fuerte);
+}
+.tabla td{ padding:9px 12px; border-bottom:1px solid var(--borde); color:var(--texto-suave); }
+.tabla tr:last-child td{ border-bottom:none }
+.tabla tbody tr{ transition: background .2s ease }
+.tabla tbody tr:hover{ background: var(--superficie) }
+.tabla .col-mono{ font-family:var(--mono); color:var(--texto) }
+.tabla .col-simbolo{
+  font-family:var(--mono); font-weight:800; color:var(--acento); font-size:1rem;
+}
+
+/* ---------------- Barras de frecuencia ---------------- */
+.barras{ display:flex; flex-direction:column; gap:10px; }
+.barra-fila{ display:grid; grid-template-columns:34px 1fr 44px; align-items:center; gap:12px; }
+.barra-simbolo{
+  font-family:var(--mono); font-weight:800; font-size:1.05rem;
+  color:var(--acento); text-align:center;
+  background:var(--acento-suave); border:1px solid var(--acento);
+  border-radius:8px; padding:3px 0;
+}
+.barra-pista{ height:16px; background:rgba(255,255,255,.06); border-radius:8px; overflow:hidden }
+.barra-valor{
+  height:100%; width:0; border-radius:8px;
+  background: linear-gradient(90deg, var(--acento), var(--c2));
+  transition: width .8s cubic-bezier(.22,1,.36,1);
+}
+.barra-num{ font-family:var(--mono); font-size:.86rem; color:var(--texto-suave); text-align:right }
+
+/* ---------------- Comparativa (2 columnas ventajas/desventajas) --------- */
+.compara{ display:grid; grid-template-columns:1fr 1fr; gap:16px }
+.compara-caja{ border-radius:var(--radio); padding:clamp(14px,1.8vw,22px); border:1px solid }
+.compara-caja h4{ font-size:.95rem; margin-bottom:12px; display:flex; align-items:center; gap:8px }
+.compara--si{ background:rgba(52,211,153,.07); border-color:rgba(52,211,153,.35) }
+.compara--si h4{ color:#34d399 }
+.compara--no{ background:rgba(248,113,113,.07); border-color:rgba(248,113,113,.32) }
+.compara--no h4{ color:#f87171 }
+@media (max-width:950px){ .compara{ grid-template-columns:1fr } }
+
+/* ---------------- ARBOL DE HUFFMAN (SVG) ---------------- */
+/* La caja es flex y el SVG se estira (flex + align-self:stretch), asi el
+   navegador siempre le da un alto real y preserveAspectRatio hace el resto. */
+.arbol-caja{
+  background: rgba(0,0,0,.22);
+  border:1px solid var(--borde); border-radius:var(--radio);
+  padding:12px; display:flex; min-height:0; overflow:hidden;
+}
+.arbol-svg{
+  flex:1 1 auto; align-self:stretch;
+  min-width:0; min-height:0; display:block;
+}
+
+.hf-arista{ stroke: rgba(255,255,255,.22); stroke-width:2; fill:none }
+.hf-bit{
+  font-family: var(--mono); font-size:12px; font-weight:800;
+  fill: var(--texto-tenue); text-anchor:middle; dominant-baseline:middle;
+}
+.hf-bit--0{ fill:#7dd3fc }
+.hf-bit--1{ fill:#fca5a5 }
+.hf-bit-fondo{ fill: #0b1120; stroke: rgba(255,255,255,.14) }
+
+.hf-nodo circle{ transition: all .45s cubic-bezier(.22,1,.36,1) }
+.hf-hoja  circle{ fill: rgba(52,211,153,.16); stroke:#34d399; stroke-width:2 }
+.hf-interno circle{ fill: rgba(255,255,255,.05); stroke: rgba(255,255,255,.3); stroke-width:2 }
+
+.hf-simbolo{
+  font-family: var(--mono); font-size:17px; font-weight:800;
+  fill:#eef2ff; text-anchor:middle; dominant-baseline:central;
+}
+.hf-freq{
+  font-family: var(--mono); font-size:13px; font-weight:700;
+  fill:#a9b4d0; text-anchor:middle; dominant-baseline:central;
+}
+.hf-hoja .hf-simbolo{ fill:#6ee7b7 }
+.hf-hoja .hf-freq{ font-size:11px; fill:#7f8db0 }
+
+/* estados durante la construccion paso a paso */
+.hf-nodo--fusion circle{
+  fill: rgba(251,191,36,.2); stroke:#fbbf24; stroke-width:3;
+  filter: drop-shadow(0 0 10px rgba(251,191,36,.7));
+}
+.hf-nodo--nuevo circle{
+  fill: rgba(167,139,250,.22); stroke:#a78bfa; stroke-width:3;
+  filter: drop-shadow(0 0 12px rgba(167,139,250,.8));
+  animation: latir 1.6s ease-in-out infinite;
+}
+@keyframes latir{
+  0%,100%{ stroke-opacity:1;  filter: drop-shadow(0 0 6px rgba(167,139,250,.55)) }
+  50%    { stroke-opacity:.55; filter: drop-shadow(0 0 18px rgba(167,139,250,.95)) }
+}
+.hf-arista--nueva{ stroke:#a78bfa; stroke-width:3 }
+
+.hf-ruta-activa .hf-arista{ stroke:#fbbf24; stroke-width:3.5 }
+
+/* Controles del reproductor paso a paso */
+.reproductor{
+  display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+  background: var(--superficie); border:1px solid var(--borde);
+  border-radius: var(--radio-sm); padding:9px 12px;
+}
+.reproductor .btn{ padding:7px 13px; font-size:.82rem }
+.reproductor-info{
+  flex:1; min-width:180px; font-size:.85rem; color:var(--texto-suave); line-height:1.45;
+}
+.reproductor-info b{ color:var(--texto) }
+.reproductor-contador{
+  font-family:var(--mono); font-size:.8rem; color:var(--acento);
+  background:var(--acento-suave); border:1px solid var(--acento);
+  border-radius:7px; padding:4px 9px; white-space:nowrap;
+}
+
+/* ---------------- Cadena de bits codificada ---------------- */
+.bits{ display:flex; flex-wrap:wrap; gap:6px; align-items:flex-end }
+.bits-grupo{ display:flex; flex-direction:column; align-items:center; gap:4px }
+.bits-letra{
+  font-family:var(--mono); font-size:.9rem; font-weight:800; color:var(--acento);
+}
+.bits-codigo{
+  font-family:var(--mono); font-size:.9rem; letter-spacing:.09em;
+  background:var(--superficie); border:1px solid var(--borde);
+  border-radius:7px; padding:5px 8px; color:#e2e8ff;
+}
+.bits-grupo:nth-child(odd) .bits-codigo{ background: var(--acento-suave); border-color:var(--acento) }
+
+/* ---------------- Cita / conclusion destacada ---------------- */
+.destacado{
+  border-left:3px solid var(--acento);
+  background: var(--acento-suave);
+  border-radius: 0 var(--radio-sm) var(--radio-sm) 0;
+  padding:14px 18px; font-size:.95rem; line-height:1.6; color:var(--texto);
+}
+
+/* ---------------- Preguntas al publico ---------------- */
+.pregunta{
+  display:flex; gap:14px; align-items:flex-start;
+  background: var(--superficie); border:1px solid var(--borde);
+  border-radius: var(--radio); padding:16px 18px;
+  transition: all .25s ease; cursor:default;
+}
+.pregunta:hover{ border-color:var(--acento); background:var(--acento-suave); transform:translateX(4px) }
+.pregunta-num{
+  flex:none; font-family:var(--mono); font-weight:800; font-size:1.5rem;
+  color:var(--acento); opacity:.55; line-height:1;
+}
+.pregunta-txt{ font-size:.98rem; line-height:1.5 }
+.pregunta-pista{ display:block; margin-top:6px; font-size:.8rem; color:var(--texto-tenue); font-style:italic }

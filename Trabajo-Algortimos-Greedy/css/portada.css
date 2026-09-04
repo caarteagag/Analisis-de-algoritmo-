@@ -1,0 +1,110 @@
+/* ============================================================
+   portada.css - CAPA DEL EQUIPO (portada + agenda)
+   Responsable: los 4 / quien coordine el repositorio
+   ============================================================ */
+
+.portada{ align-items:center; text-align:center; }
+
+.portada-kicker{
+  display:inline-flex; align-items:center; gap:9px;
+  padding:6px 16px; border-radius:999px;
+  border:1px solid var(--borde-fuerte); background:var(--superficie);
+  font-size:.74rem; letter-spacing:.16em; text-transform:uppercase;
+  color:var(--texto-suave); margin-bottom:22px;
+}
+
+.portada-titulo{
+  font-size: clamp(2.3rem, 7vw, 5.4rem);
+  font-weight:900; line-height:.98; letter-spacing:-.035em;
+  background: linear-gradient(115deg,#ffffff 5%, #9ec5ff 45%, #a78bfa 85%);
+  -webkit-background-clip:text; background-clip:text;
+  -webkit-text-fill-color:transparent; color:transparent;
+}
+.portada-titulo small{
+  display:block; margin-top:10px;
+  font-size: clamp(.95rem, 1.9vw, 1.35rem); font-weight:600; letter-spacing:.01em;
+  -webkit-text-fill-color: var(--texto-suave); color:var(--texto-suave);
+}
+
+.portada-linea{
+  width:120px; height:3px; border-radius:3px; margin:26px auto;
+  background: linear-gradient(90deg, var(--c1), var(--c2), var(--c3), var(--c4));
+}
+
+.integrantes{
+  display:grid; grid-template-columns:repeat(4,1fr);
+  gap:12px; width:100%; max-width:1080px; margin:0 auto;
+}
+.integrante{
+  background: var(--superficie); border:1px solid var(--borde);
+  border-radius: var(--radio); padding:16px 12px;
+  display:flex; flex-direction:column; align-items:center; gap:9px;
+  transition: transform .25s ease, border-color .25s ease, background .25s ease;
+}
+.integrante:hover{ transform:translateY(-5px); background:var(--superficie-2) }
+.integrante-avatar{
+  width:46px; height:46px; border-radius:14px; display:grid; place-items:center;
+  font-weight:800; font-size:.95rem; color:#080d1a;
+}
+.integrante-nombre{ font-size:.88rem; font-weight:700; line-height:1.3 }
+.integrante-rol{
+  font-size:.7rem; letter-spacing:.09em; text-transform:uppercase; color:var(--texto-tenue);
+}
+.integrante[data-c="1"]{ border-color:rgba(34,211,238,.35) }
+.integrante[data-c="1"] .integrante-avatar{ background:var(--c1) }
+.integrante[data-c="1"] .integrante-rol{ color:var(--c1) }
+.integrante[data-c="2"]{ border-color:rgba(167,139,250,.35) }
+.integrante[data-c="2"] .integrante-avatar{ background:var(--c2) }
+.integrante[data-c="2"] .integrante-rol{ color:var(--c2) }
+.integrante[data-c="3"]{ border-color:rgba(52,211,153,.35) }
+.integrante[data-c="3"] .integrante-avatar{ background:var(--c3) }
+.integrante[data-c="3"] .integrante-rol{ color:var(--c3) }
+.integrante[data-c="4"]{ border-color:rgba(251,191,36,.35) }
+.integrante[data-c="4"] .integrante-avatar{ background:var(--c4) }
+.integrante[data-c="4"] .integrante-rol{ color:var(--c4) }
+
+.portada-pie{
+  margin-top:26px; font-size:.82rem; color:var(--texto-tenue);
+  display:flex; gap:18px; justify-content:center; flex-wrap:wrap;
+}
+.portada-pie kbd{
+  font-family:var(--mono); font-size:.74rem;
+  background:var(--superficie); border:1px solid var(--borde);
+  border-bottom-width:2px; border-radius:6px; padding:2px 7px; color:var(--texto-suave);
+}
+
+/* ---------- Agenda ---------- */
+.agenda{ display:grid; grid-template-columns:repeat(4,1fr); gap:14px }
+.agenda-col{
+  border:1px solid var(--borde); border-radius:var(--radio);
+  background:var(--superficie); padding:18px 16px;
+  display:flex; flex-direction:column; gap:12px;
+  border-top:3px solid;
+  transition: transform .25s ease, background .25s ease;
+}
+.agenda-col:hover{ transform:translateY(-4px); background:var(--superficie-2) }
+.agenda-col[data-c="1"]{ border-top-color:var(--c1) }
+.agenda-col[data-c="2"]{ border-top-color:var(--c2) }
+.agenda-col[data-c="3"]{ border-top-color:var(--c3) }
+.agenda-col[data-c="4"]{ border-top-color:var(--c4) }
+.agenda-num{
+  font-family:var(--mono); font-size:2rem; font-weight:800; line-height:1; opacity:.35;
+}
+.agenda-col[data-c="1"] .agenda-num, .agenda-col[data-c="1"] .agenda-quien{ color:var(--c1) }
+.agenda-col[data-c="2"] .agenda-num, .agenda-col[data-c="2"] .agenda-quien{ color:var(--c2) }
+.agenda-col[data-c="3"] .agenda-num, .agenda-col[data-c="3"] .agenda-quien{ color:var(--c3) }
+.agenda-col[data-c="4"] .agenda-num, .agenda-col[data-c="4"] .agenda-quien{ color:var(--c4) }
+.agenda-tema{ font-size:1.02rem; font-weight:700 }
+.agenda-quien{ font-size:.76rem; font-weight:700; letter-spacing:.06em; text-transform:uppercase }
+.agenda-puntos{ list-style:none; display:flex; flex-direction:column; gap:7px; margin-top:auto }
+.agenda-puntos li{ font-size:.82rem; color:var(--texto-suave); line-height:1.45; padding-left:14px; position:relative }
+.agenda-puntos li::before{ content:"·"; position:absolute; left:3px; font-weight:900; opacity:.6 }
+
+@media (max-width:950px){
+  .integrantes{ grid-template-columns:repeat(2,1fr) }
+  .agenda{ grid-template-columns:repeat(2,1fr) }
+}
+@media (max-width:560px){
+  .integrantes{ grid-template-columns:1fr }
+  .agenda{ grid-template-columns:1fr }
+}
