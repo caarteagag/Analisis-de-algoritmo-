@@ -1,0 +1,496 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Algoritmo de Kahn · Organización de un pensum</title>
+<style>
+:root{
+  --bg:#060912;
+  --panel:#0b1220;
+  --panel2:#0f192b;
+  --card:rgba(14,23,39,.82);
+  --line:rgba(148,163,184,.18);
+  --line2:rgba(148,163,184,.30);
+  --text:#f8fafc;
+  --muted:#94a3b8;
+  --cyan:#22d3ee;
+  --cyan2:#38bdf8;
+  --indigo:#818cf8;
+  --green:#34d399;
+  --amber:#fbbf24;
+  --red:#fb7185;
+}
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#03060c;color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+body{background:
+  radial-gradient(circle at 14% 18%,rgba(34,211,238,.12),transparent 29%),
+  radial-gradient(circle at 88% 12%,rgba(129,140,248,.12),transparent 31%),
+  linear-gradient(180deg,#07101c 0%,#04070d 100%)}
+#viewport{position:relative;width:100vw;height:100vh;overflow:hidden}
+#stage{position:absolute;left:0;top:0;width:1600px;height:900px;transform-origin:0 0;overflow:hidden;background:
+  linear-gradient(rgba(148,163,184,.028) 1px,transparent 1px),
+  linear-gradient(90deg,rgba(148,163,184,.028) 1px,transparent 1px),
+  radial-gradient(circle at 10% 90%,rgba(34,211,238,.08),transparent 25%),
+  linear-gradient(180deg,#08111e 0%,#060a12 100%);
+  background-size:42px 42px,42px 42px,auto,auto;
+  box-shadow:0 40px 110px rgba(0,0,0,.45)}
+#stage::after{content:"";position:absolute;width:430px;height:430px;right:-110px;top:-170px;border-radius:50%;background:rgba(99,102,241,.08);filter:blur(70px);pointer-events:none;animation:drift 9s ease-in-out infinite alternate}
+@keyframes drift{to{transform:translate(-65px,55px) scale(1.08)}}
+
+.slide{position:absolute;inset:0;padding:96px 92px 78px;opacity:0;visibility:hidden;transform:translateX(44px) scale(.992);transition:opacity .45s ease,transform .55s cubic-bezier(.2,.8,.2,1),visibility .45s;overflow:hidden}
+.slide.active{opacity:1;visibility:visible;transform:none;z-index:2}
+.slide.exit-left{transform:translateX(-44px) scale(.992)}
+.slide.active .reveal{animation:rise .68s cubic-bezier(.2,.8,.2,1) both}
+.slide.active .d1{animation-delay:.07s}.slide.active .d2{animation-delay:.14s}.slide.active .d3{animation-delay:.21s}.slide.active .d4{animation-delay:.28s}
+@keyframes rise{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+
+.topbar{position:absolute;top:30px;left:92px;right:92px;display:flex;align-items:center;justify-content:space-between;z-index:5}
+.brand{display:flex;align-items:center;gap:11px;font-size:14px;font-weight:800;letter-spacing:.10em;text-transform:uppercase;color:#cbd5e1}
+.brand-dot{width:10px;height:10px;border-radius:50%;background:linear-gradient(135deg,var(--cyan),var(--indigo));box-shadow:0 0 18px rgba(34,211,238,.55)}
+.speaker{display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:999px;padding:8px 12px;background:rgba(6,10,18,.68);font-size:13px;font-weight:750;color:#cbd5e1}
+.speaker::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--cyan);box-shadow:0 0 12px rgba(34,211,238,.6)}
+
+.eyebrow{display:flex;align-items:center;gap:10px;margin-bottom:17px;font-size:14px;font-weight:850;text-transform:uppercase;letter-spacing:.13em;color:#bae6fd}
+.eyebrow::before{content:"";width:34px;height:1px;background:linear-gradient(90deg,var(--cyan),transparent)}
+h1{font-size:84px;line-height:.98;letter-spacing:-.055em;margin:0;max-width:1180px}
+h2{font-size:57px;line-height:1.03;letter-spacing:-.045em;margin:0}
+h3{font-size:20px;line-height:1.18;margin:0 0 8px;letter-spacing:-.02em}
+p{font-size:19px;line-height:1.48;color:#cbd5e1;margin:0}
+.lead{font-size:24px;line-height:1.45;color:#b8c4d5;max-width:980px}
+.small{font-size:13px;color:var(--muted)}
+.gradient-text{background:linear-gradient(100deg,#f8fafc 8%,#a5f3fc 48%,#c7d2fe 88%);-webkit-background-clip:text;background-clip:text;color:transparent}
+
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:24px;min-width:0}.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;min-width:0}
+.card{position:relative;min-width:0;border:1px solid var(--line);background:linear-gradient(180deg,rgba(15,25,42,.83),rgba(9,16,28,.78));border-radius:22px;padding:23px;box-shadow:inset 0 1px rgba(255,255,255,.03),0 22px 60px rgba(0,0,0,.24);overflow:hidden}
+.card-accent{border-color:rgba(56,189,248,.30)}
+.chip{display:inline-flex;align-items:center;gap:7px;padding:7px 11px;border:1px solid var(--line);border-radius:999px;background:rgba(15,23,42,.67);font-size:13px;font-weight:760;color:#cbd5e1}
+.chip.cyan{border-color:rgba(34,211,238,.30);color:#a5f3fc}.chip.green{border-color:rgba(52,211,153,.30);color:#a7f3d0}.chip.red{border-color:rgba(251,113,133,.30);color:#fecdd3}
+.metric{font-size:45px;line-height:1;font-weight:880;letter-spacing:-.055em}.metric-label{margin-top:8px;font-size:13px;text-transform:uppercase;letter-spacing:.10em;color:var(--muted)}
+
+.footer{position:absolute;left:92px;right:92px;bottom:24px;display:grid;grid-template-columns:1fr auto auto;align-items:center;gap:16px;z-index:15}
+.progress-track{height:3px;background:rgba(148,163,184,.12);border-radius:99px;overflow:hidden}.progress-bar{height:100%;width:0;background:linear-gradient(90deg,var(--cyan),var(--indigo));box-shadow:0 0 16px rgba(34,211,238,.42);transition:width .4s ease}
+.counter{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums;min-width:56px;text-align:right}
+.nav{display:flex;gap:10px}.nav button,.control{border:1px solid var(--line);background:rgba(15,23,42,.82);color:#e2e8f0;border-radius:12px;padding:10px 13px;font:inherit;font-weight:780;cursor:pointer;transition:.18s ease}
+.nav button{min-width:118px;height:44px;padding:0 16px;display:inline-flex;align-items:center;justify-content:center;gap:9px}.nav button:hover:not(:disabled),.control:hover{border-color:rgba(56,189,248,.38);background:rgba(22,34,55,.94)}.nav button:disabled,.control:disabled{opacity:.32;cursor:not-allowed}.control.primary{background:linear-gradient(135deg,#0e7490,#4f46e5);border-color:transparent}
+
+.hero-layout{display:grid;grid-template-columns:1.06fr .94fr;gap:66px;align-items:center;height:100%}
+.hero-copy{padding-bottom:42px}.hero-copy .lead{margin-top:28px;max-width:850px}.hero-tags{display:flex;gap:10px;flex-wrap:wrap;margin-top:30px}
+.hero-visual{position:relative;height:500px}
+.hero-orb{position:absolute;border-radius:50%;animation:float 5.8s ease-in-out infinite}.hero-orb.a{width:165px;height:165px;left:40px;top:205px;background:radial-gradient(circle at 35% 30%,#67e8f9,#0891b2 58%,#083344);box-shadow:0 0 60px rgba(34,211,238,.18)}.hero-orb.b{width:122px;height:122px;left:288px;top:93px;background:radial-gradient(circle at 35% 30%,#c7d2fe,#6366f1 62%,#312e81);animation-delay:-1.8s}.hero-orb.c{width:96px;height:96px;left:452px;top:286px;background:radial-gradient(circle at 35% 30%,#a7f3d0,#059669 62%,#064e3b);animation-delay:-3.1s}.hero-link{position:absolute;height:2px;transform-origin:left center;background:linear-gradient(90deg,rgba(34,211,238,.86),rgba(129,140,248,.28));box-shadow:0 0 12px rgba(34,211,238,.24)}
+@keyframes float{50%{transform:translateY(-13px) translateX(7px)}}
+
+.problem-grid{display:grid;grid-template-columns:.92fr 1.08fr;gap:30px;margin-top:30px;align-items:stretch}
+.problem-points{display:flex;flex-direction:column;gap:14px}.point{display:grid;grid-template-columns:42px 1fr;gap:14px;align-items:start;padding:17px 18px;border:1px solid var(--line);border-radius:17px;background:rgba(12,20,34,.68)}.point-num{width:34px;height:34px;border-radius:11px;display:grid;place-items:center;background:rgba(56,189,248,.10);border:1px solid rgba(56,189,248,.24);color:#a5f3fc;font-weight:850}.point p{font-size:16px}
+.flow-card{display:flex;align-items:center;justify-content:center;min-height:490px}.course-flow{width:88%;display:flex;flex-direction:column;align-items:center;gap:10px}.course-box{width:410px;padding:18px 20px;text-align:center;border-radius:16px;border:1px solid rgba(56,189,248,.30);background:linear-gradient(180deg,rgba(8,47,73,.75),rgba(8,26,43,.88));font-weight:820}.flow-arrow{width:2px;height:40px;background:linear-gradient(var(--cyan),rgba(34,211,238,.18));position:relative}.flow-arrow::after{content:"";position:absolute;bottom:-1px;left:-4px;width:8px;height:8px;border-right:2px solid var(--cyan);border-bottom:2px solid var(--cyan);transform:rotate(45deg)}
+
+.model-layout{display:grid;grid-template-columns:430px 1fr;gap:28px;margin-top:24px;align-items:stretch}.model-copy{display:flex;flex-direction:column;gap:14px}.model-copy .card{padding:20px}.model-copy p{font-size:16px}.graph-box{height:520px;border:1px solid var(--line);border-radius:24px;background:radial-gradient(circle at 50% 50%,rgba(14,165,233,.06),transparent 57%),rgba(5,10,18,.57);overflow:hidden}.graph-box svg{width:100%;height:100%;display:block}
+.g-edge{fill:none;stroke:#56657a;stroke-width:2.2}.g-node rect{fill:#0a2a42;stroke:rgba(56,189,248,.55);stroke-width:1.4}.g-node text{fill:#e0f2fe;font-weight:800;font-size:16px}.g-node .sub{fill:#8fb8cf;font-size:12px;font-weight:650}.g-badge{fill:#111827;stroke:rgba(148,163,184,.45);stroke-width:1}.g-degree{fill:#dbeafe!important;font-size:12px!important;font-weight:850!important}
+
+.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:15px;margin-top:30px}.step-card{min-height:205px;padding:21px;border:1px solid var(--line);border-radius:19px;background:rgba(12,19,32,.72)}.step-num{width:38px;height:38px;border-radius:11px;display:grid;place-items:center;margin-bottom:17px;background:rgba(56,189,248,.11);border:1px solid rgba(56,189,248,.25);font-weight:880;color:#a5f3fc}.step-card p{font-size:16px;color:#aebbd0}.algorithm-callout{margin-top:18px;display:grid;grid-template-columns:1fr auto;gap:22px;align-items:center}
+
+.explain-layout{display:grid;grid-template-columns:1.2fr .8fr;gap:24px;margin-top:28px}.mini-flow{height:455px;display:grid;grid-template-columns:1fr 70px 1fr;grid-template-rows:1fr 70px 1fr;align-items:center;justify-items:center;padding:28px}.mini-node{width:245px;padding:18px;text-align:center;border:1px solid rgba(56,189,248,.30);border-radius:16px;background:rgba(8,47,73,.64);font-weight:830}.mini-arrow{font-size:34px;color:var(--cyan)}.mini-center{grid-column:2;grid-row:2;width:58px;height:58px;border-radius:18px;display:grid;place-items:center;background:rgba(52,211,153,.10);border:1px solid rgba(52,211,153,.28);color:#a7f3d0;font-weight:900}.explain-notes{display:flex;flex-direction:column;gap:14px}.explain-notes .card{padding:19px}.explain-notes p{font-size:16px}
+
+.code-layout{display:grid;grid-template-columns:1.28fr .72fr;gap:24px;margin-top:22px;align-items:stretch}.code{height:510px;margin:0;padding:20px 22px;overflow:hidden;border:1px solid rgba(148,163,184,.18);border-radius:22px;background:#030712;color:#cbd5e1;font:14px/1.46 "SFMono-Regular",Consolas,"Liberation Mono",monospace;white-space:pre;box-shadow:0 22px 56px rgba(0,0,0,.28)}.kw{color:#c084fc}.fn{color:#67e8f9}.num{color:#fbbf24}.cm{color:#64748b}.note-list{display:grid;grid-template-rows:repeat(4,1fr);gap:12px}.note-card{padding:17px 18px;border:1px solid var(--line);border-radius:17px;background:rgba(13,22,36,.76)}.note-card strong{display:block;margin-bottom:5px;color:#e2e8f0}.note-card p{font-size:14.5px}
+
+.demo-head{display:flex;align-items:end;justify-content:space-between;gap:24px}.legend{display:flex;gap:9px;flex-wrap:wrap}.dot{width:8px;height:8px;border-radius:50%;background:#64748b}.dot.ready{background:var(--green)}.dot.current{background:var(--cyan)}.dot.done{background:#475569}
+.demo-layout{display:grid;grid-template-columns:1fr 410px;gap:22px;margin-top:18px;align-items:stretch}.demo-graph{height:535px;border:1px solid var(--line);border-radius:24px;background:radial-gradient(circle at 50% 50%,rgba(14,165,233,.06),transparent 58%),rgba(5,10,18,.58);overflow:hidden}.demo-graph svg{width:100%;height:100%;display:block}.demo-panel{height:535px;display:grid;grid-template-rows:auto auto auto 1fr auto auto;gap:10px}.demo-info{padding:14px 15px;border:1px solid var(--line);border-radius:15px;background:rgba(12,20,34,.75)}.demo-info h3{font-size:12px;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);margin-bottom:9px}.queue,.order{display:flex;gap:7px;flex-wrap:wrap;align-content:flex-start;min-height:34px}.queue-item,.order-item{padding:7px 9px;border-radius:9px;font-size:11.5px;font-weight:800}.queue-item{border:1px solid rgba(52,211,153,.30);background:rgba(6,78,59,.33);color:#bbf7d0}.order-item{border:1px solid rgba(56,189,248,.22);background:rgba(56,189,248,.08);color:#bae6fd}.phase-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}.phase{padding:9px 7px;text-align:center;border:1px solid var(--line);border-radius:10px;font-size:11px;font-weight:800;color:#64748b;background:rgba(15,23,42,.43)}.phase.on{color:#a5f3fc;border-color:rgba(34,211,238,.33);background:rgba(8,47,73,.34)}.status-box{display:flex;align-items:center;padding:16px 16px;border:1px solid var(--line);border-radius:16px;background:linear-gradient(180deg,rgba(13,22,36,.87),rgba(8,15,26,.87));font-size:14.5px;line-height:1.48;color:#cbd5e1}.demo-controls{display:grid;grid-template-columns:1.15fr 1fr 1fr .9fr;gap:6px}.demo-controls .control{padding:11px 6px;font-size:11.5px;white-space:nowrap}.demo-step{font-size:12px;color:var(--muted);text-align:right}
+.d-edge{fill:none;stroke:#536176;stroke-width:2.2;transition:stroke .3s,opacity .3s,filter .3s}.d-edge.pending{stroke:var(--amber);stroke-width:3;filter:drop-shadow(0 0 5px rgba(251,191,36,.38))}.d-edge.removed{opacity:.17}.d-node rect.main{fill:#0a2a42;stroke:rgba(56,189,248,.48);stroke-width:1.4;transition:fill .25s,stroke .25s,opacity .25s}.d-node text{fill:#e0f2fe;font-size:15px;font-weight:820}.d-node .badge{fill:#111827;stroke:rgba(148,163,184,.45);stroke-width:1}.d-node .degree-text{font-size:12px;font-weight:900;fill:#e2e8f0}.d-node.ready rect.main{fill:#064e3b;stroke:rgba(52,211,153,.8)}.d-node.active rect.main{fill:#0e3b52;stroke:#67e8f9;stroke-width:2.2;filter:drop-shadow(0 0 10px rgba(34,211,238,.24))}.d-node.done{opacity:.38}.d-node.new-ready rect.main{animation:pulseReady 1.1s ease 2}@keyframes pulseReady{50%{fill:#08734f;stroke:#6ee7b7}}
+
+.cycle-layout{display:grid;grid-template-columns:1.05fr .95fr;gap:28px;margin-top:28px}.cycle-card{height:430px;position:relative;display:grid;place-items:center}.cycle-card svg{width:570px;height:310px;overflow:visible}.cycle-card path{fill:none;stroke:var(--red);stroke-width:3;stroke-dasharray:9 8;filter:drop-shadow(0 0 6px rgba(251,113,133,.30));animation:dash 1.6s linear infinite}@keyframes dash{to{stroke-dashoffset:-34}}.cycle-node{position:absolute;width:190px;padding:23px 15px;text-align:center;border-radius:18px;border:1px solid rgba(251,113,133,.48);background:rgba(76,5,25,.66);font-weight:850;color:#ffe4e6}.cycle-node.a{left:12%;top:44%}.cycle-node.b{right:12%;top:44%}.cycle-notes{display:flex;flex-direction:column;justify-content:center;gap:15px}.cycle-notes .card{padding:20px}.cycle-notes p{font-size:16.5px}
+
+.results-layout{display:grid;grid-template-columns:1.12fr .88fr;gap:24px;margin-top:28px}.result-path{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-top:16px}.result-pill{padding:9px 11px;border-radius:10px;border:1px solid rgba(56,189,248,.20);background:rgba(56,189,248,.08);font-size:12.5px;font-weight:800;color:#bae6fd}.result-arrow{color:#475569}.metrics{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}.takeaway{font-size:29px;line-height:1.26;font-weight:830;letter-spacing:-.025em}.takeaway span{color:#a5f3fc}
+
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}}
+</style>
+</head>
+<body>
+<div id="viewport">
+<div id="stage">
+
+<section class="slide active" data-speaker="Persona 1">
+  <div class="topbar"><div class="brand"><span class="brand-dot"></span>Grafos · Algoritmo de Kahn</div><div class="speaker">Persona 1</div></div>
+  <div class="hero-layout">
+    <div class="hero-copy">
+      <div class="eyebrow reveal">Problema aplicado</div>
+      <h1 class="gradient-text reveal d1">Organizar y validar un pensum universitario</h1>
+      <p class="lead reveal d2">Usamos un grafo dirigido y el algoritmo de Kahn para encontrar un orden válido de materias y detectar dependencias circulares.</p>
+      <div class="hero-tags reveal d3"><span class="chip cyan">Grafo dirigido</span><span class="chip">Orden topológico</span><span class="chip green">O(n + m)</span></div>
+    </div>
+    <div class="hero-visual reveal d2" aria-hidden="true">
+      <div class="hero-orb a"></div><div class="hero-orb b"></div><div class="hero-orb c"></div>
+      <div class="hero-link" style="left:185px;top:268px;width:165px;transform:rotate(-31deg)"></div>
+      <div class="hero-link" style="left:382px;top:176px;width:154px;transform:rotate(36deg)"></div>
+      <div class="hero-link" style="left:190px;top:292px;width:330px;transform:rotate(9deg);opacity:.45"></div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-speaker="Persona 1">
+  <div class="topbar"><div class="brand"><span class="brand-dot"></span>01 · Problema realista</div><div class="speaker">Persona 1</div></div>
+  <div class="eyebrow reveal">Situación realista planteada</div>
+  <h2 class="reveal d1">¿En qué orden se pueden cursar las materias?</h2>
+  <p class="lead reveal d2" style="margin-top:16px">Un pensum tiene materias que dependen de otras. El sistema debe respetar los prerrequisitos y además detectar si existe una dependencia imposible.</p>
+  <div class="problem-grid">
+    <div class="problem-points reveal d2">
+      <div class="point"><div class="point-num">1</div><div><h3>Respetar prerrequisitos</h3><p>Ninguna materia puede aparecer antes que la asignatura que la habilita.</p></div></div>
+      <div class="point"><div class="point-num">2</div><div><h3>Construir un orden</h3><p>Si hay varias materias disponibles se puede escoger cualquiera sin romper la validez.</p></div></div>
+      <div class="point"><div class="point-num">3</div><div><h3>Detectar ciclos</h3><p>Si dos o más materias se necesitan entre sí el pensum queda bloqueado.</p></div></div>
+    </div>
+    <div class="card flow-card reveal d3">
+      <div class="course-flow">
+        <div class="course-box">Programación 1</div><div class="flow-arrow"></div>
+        <div class="course-box">Programación 2</div><div class="flow-arrow"></div>
+        <div class="course-box">Estructuras de Datos</div><div class="flow-arrow"></div>
+        <div class="course-box">Análisis de Algoritmos</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-speaker="Persona 2">
+  <div class="topbar"><div class="brand"><span class="brand-dot"></span>02 · Modelo del grafo</div><div class="speaker">Persona 2</div></div>
+  <div class="eyebrow reveal">Cómo representamos el problema</div>
+  <h2 class="reveal d1">Materias como vértices y prerrequisitos como aristas</h2>
+  <div class="model-layout">
+    <div class="model-copy reveal d2">
+      <div class="card"><span class="chip cyan">Vértice</span><p style="margin-top:11px">Cada materia del pensum se representa como un vértice.</p></div>
+      <div class="card"><span class="chip cyan">Arista dirigida</span><p style="margin-top:11px">Si A es requisito de B dibujamos <strong style="color:#e0f2fe">A → B</strong>.</p></div>
+      <div class="card"><span class="chip green">Grado de entrada</span><p style="margin-top:11px">Indica cuántos prerrequisitos siguen pendientes para una materia.</p></div>
+      <div class="card card-accent"><h3>Pregunta equivalente</h3><p>¿Podemos ordenar todos los vértices sin violar ninguna dependencia?</p></div>
+    </div>
+    <div class="graph-box reveal d3">
+      <svg viewBox="0 0 1000 520" role="img" aria-label="Grafo de materias y prerrequisitos">
+        <defs><marker id="m1" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#56657a"></path></marker></defs>
+        <path class="g-edge" d="M225 155 C315 155 330 105 420 105" marker-end="url(#m1)"/>
+        <path class="g-edge" d="M225 365 C315 365 330 415 420 415" marker-end="url(#m1)"/>
+        <path class="g-edge" d="M610 105 C685 105 700 105 775 105" marker-end="url(#m1)"/>
+        <path class="g-edge" d="M610 415 C685 415 700 415 775 415" marker-end="url(#m1)"/>
+        <path class="g-edge" d="M930 105 C965 145 965 190 945 235" marker-end="url(#m1)"/>
+        <path class="g-edge" d="M930 415 C965 375 965 330 945 285" marker-end="url(#m1)"/>
+        <g class="g-node" transform="translate(40 122)"><rect width="185" height="66" rx="14"/><text x="92.5" y="28" text-anchor="middle">Programación 1</text><text class="sub" x="92.5" y="47" text-anchor="middle">grado 0</text></g>
+        <g class="g-node" transform="translate(40 332)"><rect width="185" height="66" rx="14"/><text x="92.5" y="28" text-anchor="middle">Matemáticas 1</text><text class="sub" x="92.5" y="47" text-anchor="middle">grado 0</text></g>
+        <g class="g-node" transform="translate(420 72)"><rect width="190" height="66" rx="14"/><text x="95" y="28" text-anchor="middle">Programación 2</text><text class="sub" x="95" y="47" text-anchor="middle">grado 1</text></g>
+        <g class="g-node" transform="translate(420 382)"><rect width="190" height="66" rx="14"/><text x="95" y="28" text-anchor="middle">Matemáticas 2</text><text class="sub" x="95" y="47" text-anchor="middle">grado 1</text></g>
+        <g class="g-node" transform="translate(775 72)"><rect width="175" height="66" rx="14"/><text x="87.5" y="28" text-anchor="middle">Estructuras</text><text class="sub" x="87.5" y="47" text-anchor="middle">grado 1</text></g>
+        <g class="g-node" transform="translate(775 382)"><rect width="175" height="66" rx="14"/><text x="87.5" y="28" text-anchor="middle">Métodos Num.</text><text class="sub" x="87.5" y="47" text-anchor="middle">grado 1</text></g>
+        <g class="g-node" transform="translate(800 227)"><rect width="180" height="66" rx="14"/><text x="90" y="27" text-anchor="middle">Análisis Alg.</text><text class="sub" x="90" y="47" text-anchor="middle">grado 2</text></g>
+      </svg>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-speaker="Persona 2">
+  <div class="topbar"><div class="brand"><span class="brand-dot"></span>03 · Algoritmo</div><div class="speaker">Persona 2</div></div>
+  <div class="eyebrow reveal">Algoritmo seleccionado</div>
+  <h2 class="reveal d1">Kahn construye un orden topológico</h2>
+  <p class="lead reveal d2" style="margin-top:15px">La regla es sencilla: procesar primero las materias con grado de entrada 0 y liberar progresivamente las que dependen de ellas.</p>
+  <div class="steps reveal d3">
+    <div class="step-card"><div class="step-num">1</div><h3>Calcular grados</h3><p>Contamos cuántos prerrequisitos tiene cada materia.</p></div>
+    <div class="step-card"><div class="step-num">2</div><h3>Crear la cola</h3><p>Entrarán las materias cuyo grado de entrada sea 0.</p></div>
+    <div class="step-card"><div class="step-num">3</div><h3>Procesar</h3><p>Quitamos una materia y reducimos los grados de sus dependientes.</p></div>
+    <div class="step-card"><div class="step-num">4</div><h3>Verificar</h3><p>Si procesamos todas las materias no existe ningún ciclo.</p></div>
+  </div>
+  <div class="card card-accent algorithm-callout reveal d4"><div><h3>Idea clave</h3><p style="font-size:16px">Una materia se vuelve disponible exactamente cuando su grado de entrada llega a cero.</p></div><span class="chip green">grado 0 → a la cola</span></div>
+</section>
+
+<section class="slide" data-speaker="Persona 3">
+  <div class="topbar"><div class="brand"><span class="brand-dot"></span>04 · Funcionamiento</div><div class="speaker">Persona 3</div></div>
+  <div class="eyebrow reveal">Antes de ver el código</div>
+  <h2 class="reveal d1">Qué ocurre cada vez que procesamos una materia</h2>
+  <div class="explain-layout">
+    <div class="card mini-flow reveal d2">
+      <div class="mini-node" style="grid-column:1;grid-row:1">Programación 1<br><span class="small">grado 0</span></div>
+      <div class="mini-arrow" style="grid-column:2;grid-row:1">→</div>
+      <div class="mini-node" style="grid-column:3;grid-row:1">Programación 2<br><span class="small">grado 1 → 0</span></div>
+      <div class="mini-arrow" style="grid-column:3;grid-row:2;transform:rotate(90deg)">→</div>
+      <div class="mini-center">COLA</div>
+      <div class="mini-node" style="grid-column:3;grid-row:3;border-color:rgba(52,211,153,.36);background:rgba(6,78,59,.34)">Programación 2<br><span class="small" style="color:#a7f3d0">ya disponible</span></div>
+      <div class="mini-node" style="grid-column:1;grid-row:3;opacity:.45">Programación 1<br><span class="small">procesada</span></div>
+    </div>
+    <div class="explain-notes reveal d3">
+      <div class="card"><span class="chip green">1 · Tomar</span><p style="margin-top:10px">Sacamos de la cola una materia que ya tiene todos sus requisitos cumplidos.</p></div>
+      <div class="card"><span class="chip cyan">2 · Liberar</span><p style="margin-top:10px">Eliminamos sus aristas y reducimos el grado de las materias siguientes.</p></div>
+      <div class="card"><span class="chip cyan">3 · Agregar</span><p style="margin-top:10px">Las materias que llegan a grado 0 se agregan a la cola.</p></div>
+      <div class="card"><span class="chip">4 · Repetir</span><p style="margin-top:10px">Continuamos hasta procesar todo el grafo o quedar bloqueados.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-speaker="Persona 3">
+  <div class="topbar"><div class="brand"><span class="brand-dot"></span>05 · Implementación</div><div class="speaker">Persona 3</div></div>
+  <div class="eyebrow reveal">Código en Python</div>
+  <h2 class="reveal d1">La implementación sigue los mismos pasos</h2>
+  <div class="code-layout">
+<pre class="code reveal d2"><span class="kw">from</span> collections <span class="kw">import</span> deque
+
+<span class="kw">def</span> <span class="fn">organizar_pensum</span>(materias, prerrequisitos):
+    grafo = {m: [] <span class="kw">for</span> m <span class="kw">in</span> materias}
+    grado = {m: <span class="num">0</span> <span class="kw">for</span> m <span class="kw">in</span> materias}
+
+    <span class="kw">for</span> requisito, materia <span class="kw">in</span> prerrequisitos:
+        grafo[requisito].append(materia)
+        grado[materia] += <span class="num">1</span>
+
+    cola = deque([m <span class="kw">for</span> m <span class="kw">in</span> materias
+                  <span class="kw">if</span> grado[m] == <span class="num">0</span>])
+    orden = []
+
+    <span class="kw">while</span> cola:
+        materia = cola.popleft()
+        orden.append(materia)
+
+        <span class="kw">for</span> siguiente <span class="kw">in</span> grafo[materia]:
+            grado[siguiente] -= <span class="num">1</span>
+            <span class="kw">if</span> grado[siguiente] == <span class="num">0</span>:
+                cola.append(siguiente)
+
+    <span class="kw">return</span> orden <span class="kw">if</span> len(orden) == len(materias) <span class="kw">else</span> <span class="kw">None</span></pre>
+    <div class="note-list reveal d3">
+      <div class="note-card"><strong>Lista de adyacencia</strong><p>Guarda qué materias se desbloquean al terminar otra.</p></div>
+      <div class="note-card"><strong>Grado de entrada</strong><p>Cuenta cuántos prerrequisitos siguen pendientes.</p></div>
+      <div class="note-card"><strong>Cola</strong><p>Contiene únicamente materias que ya se pueden cursar.</p></div>
+      <div class="note-card"><strong>Validación final</strong><p>Si el orden contiene todas las materias el grafo es un DAG.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-speaker="Persona 4" id="demoSlide">
+  <div class="topbar"><div class="brand"><span class="brand-dot"></span>06 · Demostración</div><div class="speaker">Persona 4</div></div>
+  <div class="demo-head">
+    <div><div class="eyebrow reveal">El código funcionando</div><h2 class="reveal d1">Simulación lenta paso a paso</h2></div>
+    <div class="legend reveal d2"><span class="chip"><span class="dot ready"></span>Disponible</span><span class="chip"><span class="dot current"></span>Procesando</span><span class="chip"><span class="dot done"></span>Procesada</span></div>
+  </div>
+  <div class="demo-layout">
+    <div class="demo-graph reveal d2"><svg id="demoSvg" viewBox="0 0 1000 535" role="img" aria-label="Simulación visual del algoritmo de Kahn"></svg></div>
+    <div class="demo-panel reveal d3">
+      <div class="demo-info"><h3>Cola de disponibles</h3><div class="queue" id="demoQueue"></div></div>
+      <div class="demo-info"><h3>Orden construido</h3><div class="order" id="demoOrder"></div></div>
+      <div class="phase-strip"><div class="phase" id="phase1">1 · Tomar</div><div class="phase" id="phase2">2 · Liberar</div><div class="phase" id="phase3">3 · Guardar</div></div>
+      <div class="status-box" id="demoStatus">Pulsa <strong style="margin:0 4px;color:#a5f3fc">Auto lento</strong> o avanza y retrocede con los botones de paso para explicar cada cambio.</div>
+      <div class="demo-controls"><button class="control primary" id="autoBtn">▶ Auto lento</button><button class="control" id="demoPrevBtn">← Atrás</button><button class="control" id="demoNextBtn">Paso →</button><button class="control" id="resetBtn">Reiniciar</button></div>
+      <div class="demo-step" id="demoStep">Subpaso 0</div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-speaker="Persona 5">
+  <div class="topbar"><div class="brand"><span class="brand-dot"></span>07 · Detección de ciclos</div><div class="speaker">Persona 5</div></div>
+  <div class="eyebrow reveal">Cuando el pensum está mal definido</div>
+  <h2 class="reveal d1">Un ciclo deja materias bloqueadas</h2>
+  <div class="cycle-layout">
+    <div class="card cycle-card reveal d2">
+      <svg viewBox="0 0 570 310"><defs><marker id="dangerArrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#fb7185"></path></marker></defs><path d="M145 118 C215 30 355 30 425 118" marker-end="url(#dangerArrow)"/><path d="M425 192 C355 280 215 280 145 192" marker-end="url(#dangerArrow)"/></svg>
+      <div class="cycle-node a">Materia A<div class="small" style="color:#fda4af;margin-top:6px">grado 1</div></div><div class="cycle-node b">Materia B<div class="small" style="color:#fda4af;margin-top:6px">grado 1</div></div>
+    </div>
+    <div class="cycle-notes reveal d3">
+      <div class="card"><span class="chip red">A necesita B</span><p style="margin-top:11px">A nunca alcanza grado 0 y no puede entrar a la cola.</p></div>
+      <div class="card"><span class="chip red">B necesita A</span><p style="margin-top:11px">B queda exactamente en la misma situación.</p></div>
+      <div class="card" style="border-color:rgba(251,113,133,.28)"><h3 style="color:#fecdd3">Cómo lo detecta Kahn</h3><p>La cola queda vacía antes de procesar todas las materias. Por eso sabemos que existe un ciclo.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-speaker="Persona 5">
+  <div class="topbar"><div class="brand"><span class="brand-dot"></span>08 · Resultados</div><div class="speaker">Persona 5</div></div>
+  <div class="eyebrow reveal">Resultados obtenidos</div>
+  <h2 class="reveal d1">El algoritmo valida el pensum y genera un orden posible</h2>
+  <div class="results-layout">
+    <div class="reveal d2">
+      <div class="card card-accent"><h3>Un orden posible</h3><div class="result-path"><span class="result-pill">Prog. 1</span><span class="result-arrow">→</span><span class="result-pill">Mat. 1</span><span class="result-arrow">→</span><span class="result-pill">Prog. 2</span><span class="result-arrow">→</span><span class="result-pill">Mat. 2</span><span class="result-arrow">→</span><span class="result-pill">Estructuras</span><span class="result-arrow">→</span><span class="result-pill">Métodos</span><span class="result-arrow">→</span><span class="result-pill">Análisis</span></div></div>
+      <div class="metrics"><div class="card"><div class="metric">O(n + m)</div><div class="metric-label">Tiempo</div><p style="font-size:14px;margin-top:10px">Cada vértice y cada arista se procesa una vez.</p></div><div class="card"><div class="metric">O(n + m)</div><div class="metric-label">Espacio</div><p style="font-size:14px;margin-top:10px">Se guardan el grafo los grados y la cola.</p></div></div>
+    </div>
+    <div class="card reveal d3" style="display:flex;flex-direction:column;justify-content:center;padding:30px"><div class="result-kpis"><div class="result-kpi"><strong>7 / 7</strong><span>materias procesadas</span></div><div class="result-kpi"><strong>0</strong><span>ciclos en el caso válido</span></div></div><div class="takeaway">Los grafos convierten los prerrequisitos en una estructura que podemos <span>ordenar validar y explicar</span> de forma eficiente.</div><p style="font-size:16px;margin-top:22px">Si la cola se vacía antes de procesar las 7 materias el sistema detecta un ciclo.<br><br>n = número de materias · m = relaciones de prerrequisito</p></div>
+  </div>
+</section>
+
+<div class="footer"><div class="progress-track"><div class="progress-bar" id="progress"></div></div><div class="counter" id="counter">01 / 09</div><div class="nav"><button type="button" id="prevBtn" aria-label="Diapositiva anterior"><span>←</span> Anterior</button><button type="button" id="nextSlideBtn" aria-label="Diapositiva siguiente">Siguiente <span>→</span></button></div></div>
+</div>
+</div>
+<script>
+(() => {
+  const DESIGN_W=1600, DESIGN_H=900;
+  const stage=document.getElementById('stage');
+  function fitStage(){
+    const s=Math.min(window.innerWidth/DESIGN_W,window.innerHeight/DESIGN_H);
+    stage.style.transform=`scale(${s})`;
+    stage.style.left=((window.innerWidth-DESIGN_W*s)/2)+'px';
+    stage.style.top=((window.innerHeight-DESIGN_H*s)/2)+'px';
+  }
+  window.addEventListener('resize',fitStage); fitStage();
+
+  const slides=[...document.querySelectorAll('.slide')];
+  const progress=document.getElementById('progress');
+  const counter=document.getElementById('counter');
+  let idx=0;
+  const q=new URLSearchParams(location.search).get('slide');
+  if(q){const n=Math.max(1,Math.min(slides.length,Number(q)||1));slides[0].classList.remove('active');idx=n-1;slides[idx].classList.add('active');}
+  const prevBtn=document.getElementById('prevBtn');
+  const nextSlideBtn=document.getElementById('nextSlideBtn');
+  function renderDeck(){
+    progress.style.width=((idx+1)/slides.length*100)+'%';
+    counter.textContent=String(idx+1).padStart(2,'0')+' / '+String(slides.length).padStart(2,'0');
+    prevBtn.disabled=idx===0;
+    nextSlideBtn.disabled=idx===slides.length-1;
+  }
+  function showSlide(next){
+    next=Math.max(0,Math.min(slides.length-1,next));
+    if(next===idx)return;
+    stopAuto();
+    const old=slides[idx],dir=next>idx?1:-1;
+    old.classList.toggle('exit-left',dir>0);
+    old.classList.remove('active');
+    setTimeout(()=>old.classList.remove('exit-left'),560);
+    idx=next;
+    slides[idx].classList.add('active');
+    renderDeck();
+  }
+  prevBtn.addEventListener('click',()=>showSlide(idx-1));
+  nextSlideBtn.addEventListener('click',()=>showSlide(idx+1));
+  document.addEventListener('keydown',e=>{
+    if(['INPUT','TEXTAREA','SELECT','BUTTON'].includes(e.target.tagName))return;
+    if(['ArrowRight','PageDown',' '].includes(e.key)){e.preventDefault();showSlide(idx+1)}
+    if(['ArrowLeft','PageUp'].includes(e.key)){e.preventDefault();showSlide(idx-1)}
+    if(e.key==='Home')showSlide(0);if(e.key==='End')showSlide(slides.length-1);
+  });
+  renderDeck();
+
+  const svg=document.getElementById('demoSvg');
+  const queueEl=document.getElementById('demoQueue');
+  const orderEl=document.getElementById('demoOrder');
+  const statusEl=document.getElementById('demoStatus');
+  const stepEl=document.getElementById('demoStep');
+  const autoBtn=document.getElementById('autoBtn');
+  const demoPrevBtn=document.getElementById('demoPrevBtn');
+  const demoNextBtn=document.getElementById('demoNextBtn');
+  const resetBtn=document.getElementById('resetBtn');
+  const phases=[document.getElementById('phase1'),document.getElementById('phase2'),document.getElementById('phase3')];
+  const NS='http://www.w3.org/2000/svg';
+  const nodes=[
+    {name:'Programación 1',short:'Prog. 1',x:55,y:115,w:180,h:66},
+    {name:'Matemáticas 1',short:'Mat. 1',x:55,y:345,w:180,h:66},
+    {name:'Programación 2',short:'Prog. 2',x:335,y:82,w:185,h:66},
+    {name:'Matemáticas 2',short:'Mat. 2',x:335,y:378,w:185,h:66},
+    {name:'Estructuras',short:'Estructuras',x:625,y:82,w:175,h:66},
+    {name:'Métodos Numéricos',short:'Métodos',x:625,y:378,w:175,h:66},
+    {name:'Análisis de Algoritmos',short:'Análisis',x:790,y:231,w:185,h:66}
+  ];
+  const edges=[[0,2],[1,3],[2,4],[3,5],[4,6],[5,6]];
+  let state=null,autoTimer=null,substep=0,active=null,pendingEdges=[],newReady=[],demoHistory=[];
+
+  function pathFor(a,b){
+    const A=nodes[a],B=nodes[b];
+    const x1=A.x+A.w,y1=A.y+A.h/2,x2=B.x,y2=B.y+B.h/2;
+    const bend=Math.max(55,(x2-x1)*.48);
+    return `M${x1} ${y1} C${x1+bend} ${y1} ${x2-bend} ${y2} ${x2} ${y2}`;
+  }
+  function makeSvg(tag,attrs={}){const el=document.createElementNS(NS,tag);for(const [k,v] of Object.entries(attrs))el.setAttribute(k,v);return el}
+  function buildGraph(){
+    svg.innerHTML='';
+    const defs=makeSvg('defs');const marker=makeSvg('marker',{id:'demoArrow',markerWidth:'10',markerHeight:'10',refX:'8',refY:'3',orient:'auto'});marker.appendChild(makeSvg('path',{d:'M0,0 L0,6 L8,3 z',fill:'#536176'}));defs.appendChild(marker);svg.appendChild(defs);
+    edges.forEach(([a,b],i)=>{const p=makeSvg('path',{d:pathFor(a,b),class:'d-edge',id:'edge'+i,'marker-end':'url(#demoArrow)'});svg.appendChild(p)});
+    nodes.forEach((n,i)=>{
+      const g=makeSvg('g',{class:'d-node',id:'node'+i,transform:`translate(${n.x} ${n.y})`});
+      g.appendChild(makeSvg('rect',{class:'main',width:n.w,height:n.h,rx:'14'}));
+      const t=makeSvg('text',{x:n.w/2,y:'31','text-anchor':'middle'});t.textContent=n.name;g.appendChild(t);
+      const badge=makeSvg('circle',{class:'badge',cx:n.w-4,cy:'4',r:'15'});g.appendChild(badge);
+      const dt=makeSvg('text',{class:'degree-text',x:n.w-4,y:'8','text-anchor':'middle',id:'degree'+i});dt.textContent='0';g.appendChild(dt);
+      svg.appendChild(g);
+    });
+  }
+  function resetDemo(){
+    stopAuto();buildGraph();
+    const adj=nodes.map(()=>[]),indeg=nodes.map(()=>0);edges.forEach(([a,b],i)=>{adj[a].push({v:b,e:i});indeg[b]++});
+    state={adj,indeg,queue:[],order:[],processed:new Set(),removed:new Set(),finished:false};
+    for(let i=0;i<nodes.length;i++)if(indeg[i]===0)state.queue.push(i);
+    substep=0;active=null;pendingEdges=[];newReady=[];demoHistory=[];
+    statusEl.innerHTML='Inicio: las materias con <strong style="color:#a7f3d0;margin:0 4px">grado 0</strong> ya están en la cola.';
+    stepEl.textContent='Subpaso 0';autoBtn.textContent='▶ Auto lento';renderDemo();
+  }
+  function phaseOn(n){phases.forEach((p,i)=>p.classList.toggle('on',i===n));}
+  function renderDemo(){
+    nodes.forEach((_,i)=>{
+      const g=document.getElementById('node'+i);g.setAttribute('class','d-node');
+      if(state.processed.has(i))g.classList.add('done');
+      else if(i===active)g.classList.add('active');
+      else if(state.queue.includes(i))g.classList.add('ready');
+      if(newReady.includes(i))g.classList.add('new-ready');
+      document.getElementById('degree'+i).textContent=state.indeg[i];
+    });
+    edges.forEach((_,i)=>{
+      const e=document.getElementById('edge'+i);e.setAttribute('class','d-edge');
+      if(state.removed.has(i))e.classList.add('removed');
+      else if(pendingEdges.includes(i))e.classList.add('pending');
+    });
+    queueEl.innerHTML='';state.queue.forEach(i=>{const d=document.createElement('div');d.className='queue-item';d.textContent=nodes[i].short;queueEl.appendChild(d)});
+    orderEl.innerHTML='';state.order.forEach(i=>{const d=document.createElement('div');d.className='order-item';d.textContent=nodes[i].short;orderEl.appendChild(d)});
+    demoPrevBtn.disabled=demoHistory.length===0;
+    demoNextBtn.disabled=!!state.finished;
+  }
+  function snapshotDemo(){
+    return {
+      indeg:[...state.indeg],queue:[...state.queue],order:[...state.order],
+      processed:[...state.processed],removed:[...state.removed],finished:state.finished,
+      substep,active,pendingEdges:[...pendingEdges],newReady:[...newReady],
+      status:statusEl.innerHTML,step:stepEl.textContent,phase:phases.findIndex(p=>p.classList.contains('on'))
+    };
+  }
+  function restoreDemo(snap){
+    state.indeg=[...snap.indeg];state.queue=[...snap.queue];state.order=[...snap.order];
+    state.processed=new Set(snap.processed);state.removed=new Set(snap.removed);state.finished=snap.finished;
+    substep=snap.substep;active=snap.active;pendingEdges=[...snap.pendingEdges];newReady=[...snap.newReady];
+    statusEl.innerHTML=snap.status;stepEl.textContent=snap.step;phaseOn(snap.phase);
+    autoBtn.textContent='▶ Auto lento';renderDemo();
+  }
+  function previousDemoStep(){
+    stopAuto();
+    if(!demoHistory.length)return;
+    restoreDemo(demoHistory.pop());
+  }
+  function nextDemoStep(){
+    if(state.finished)return false;
+    demoHistory.push(snapshotDemo());
+    newReady=[];
+    if(substep===0){
+      if(state.queue.length===0){
+        state.finished=true;phaseOn(-1);statusEl.innerHTML=state.order.length===nodes.length?'<strong style="color:#a7f3d0">Final:</strong>&nbsp; se procesaron todas las materias y el grafo no tiene ciclos.':'<strong style="color:#fecdd3">Bloqueo:</strong>&nbsp; quedaron materias sin procesar por un ciclo.';renderDemo();stopAuto();return false;
+      }
+      active=state.queue.shift();pendingEdges=state.adj[active].map(x=>x.e);substep=1;phaseOn(0);
+      statusEl.innerHTML=`<strong style="color:#a5f3fc">1 · Tomar:</strong>&nbsp; sacamos <strong>${nodes[active].name}</strong> de la cola porque su grado es 0.`;
+    } else if(substep===1){
+      phaseOn(1);newReady=[];
+      const changes=[];
+      for(const {v,e} of state.adj[active]){
+        if(state.removed.has(e))continue;
+        state.removed.add(e);state.indeg[v]--;
+        changes.push(`${nodes[v].short}: ${state.indeg[v]+1} → ${state.indeg[v]}`);
+        if(state.indeg[v]===0){state.queue.push(v);newReady.push(v)}
+      }
+      pendingEdges=[];substep=2;
+      if(changes.length){statusEl.innerHTML=`<strong style="color:#fde68a">2 · Liberar:</strong>&nbsp; eliminamos las dependencias de ${nodes[active].name}. Grados: ${changes.join(' · ')}${newReady.length?' y la materia nueva entra a la cola.':'.'}`;}
+      else{statusEl.innerHTML=`<strong style="color:#fde68a">2 · Liberar:</strong>&nbsp; ${nodes[active].name} no tiene materias posteriores que desbloquear.`;}
+    } else {
+      phaseOn(2);state.processed.add(active);state.order.push(active);
+      statusEl.innerHTML=`<strong style="color:#a7f3d0">3 · Guardar:</strong>&nbsp; añadimos ${nodes[active].name} al orden topológico y pasamos a la siguiente materia.`;
+      active=null;pendingEdges=[];newReady=[];substep=0;
+      if(state.order.length===nodes.length){state.finished=true;setTimeout(()=>{phaseOn(-1);statusEl.innerHTML='<strong style="color:#a7f3d0">Resultado:</strong>&nbsp; todas las materias fueron procesadas. El pensum es válido y no contiene ciclos.';renderDemo();stopAuto();},700)}
+    }
+    const done=state.order.length*3+(substep===1?1:substep===2?2:0);stepEl.textContent=`Subpaso ${done} de ${nodes.length*3}`;
+    renderDemo();return true;
+  }
+  function startAuto(){
+    if(autoTimer){stopAuto();return}
+    if(state.finished)resetDemo();
+    autoBtn.textContent='❚❚ Pausar';nextDemoStep();
+    autoTimer=setInterval(()=>{if(!nextDemoStep())stopAuto()},4200);
+  }
+  function stopAuto(){if(autoTimer){clearInterval(autoTimer);autoTimer=null}if(!state?.finished)autoBtn.textContent='▶ Auto lento';else autoBtn.textContent='✓ Finalizado'}
+  autoBtn.addEventListener('click',startAuto);
+  demoPrevBtn.addEventListener('click',previousDemoStep);
+  demoNextBtn.addEventListener('click',()=>{stopAuto();nextDemoStep()});
+  resetBtn.addEventListener('click',resetDemo);
+  resetDemo();
+})();
+</script>
+</body>
+</html>
