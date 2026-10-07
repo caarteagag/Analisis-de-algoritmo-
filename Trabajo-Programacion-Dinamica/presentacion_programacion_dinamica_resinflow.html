@@ -1,0 +1,464 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>ResinFlow · Programación Dinámica</title>
+<style>
+:root{
+  --bg:#05070b; --panel:#0b111a; --panel2:#101826; --line:rgba(148,163,184,.18);
+  --text:#f8fafc; --muted:#9fb0c4; --cyan:#22d3ee; --blue:#60a5fa; --violet:#8b5cf6;
+  --green:#34d399; --amber:#fbbf24; --red:#fb7185; --slate:#334155;
+}
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#02040a;color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+body{background:
+ radial-gradient(circle at 12% 10%,rgba(34,211,238,.11),transparent 30%),
+ radial-gradient(circle at 88% 15%,rgba(139,92,246,.10),transparent 30%),
+ linear-gradient(180deg,#07101a 0%,#03060b 100%)}
+#viewport{position:relative;width:100vw;height:100vh;overflow:hidden}
+#stage{position:absolute;left:0;top:0;width:1600px;height:900px;transform-origin:0 0;overflow:hidden;background:
+ linear-gradient(rgba(148,163,184,.025) 1px,transparent 1px),
+ linear-gradient(90deg,rgba(148,163,184,.025) 1px,transparent 1px),
+ radial-gradient(circle at 18% 86%,rgba(34,211,238,.07),transparent 23%),
+ linear-gradient(180deg,#07111d 0%,#05080e 100%);
+ background-size:44px 44px,44px 44px,auto,auto}
+#stage::after{content:"";position:absolute;width:420px;height:420px;right:-120px;top:-150px;border-radius:50%;background:rgba(99,102,241,.07);filter:blur(80px);animation:drift 10s ease-in-out infinite alternate;pointer-events:none}
+@keyframes drift{to{transform:translate(-70px,60px) scale(1.05)}}
+.slide{position:absolute;inset:0;padding:92px 92px 78px;opacity:0;visibility:hidden;transform:translateX(46px) scale(.993);transition:opacity .42s ease,transform .5s cubic-bezier(.2,.8,.2,1),visibility .42s;overflow:hidden}
+.slide.active{opacity:1;visibility:visible;transform:none;z-index:2}
+.slide.exit-left{transform:translateX(-46px) scale(.993)}
+.slide.active .reveal{animation:rise .6s cubic-bezier(.2,.8,.2,1) both}.slide.active .d1{animation-delay:.06s}.slide.active .d2{animation-delay:.12s}.slide.active .d3{animation-delay:.18s}.slide.active .d4{animation-delay:.24s}
+@keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.topbar{position:absolute;top:28px;left:92px;right:92px;display:flex;align-items:center;justify-content:space-between;z-index:5}
+.brand{display:flex;align-items:center;gap:11px;font-size:14px;font-weight:850;letter-spacing:.11em;text-transform:uppercase;color:#d4deea}
+.brand-dot{width:10px;height:10px;border-radius:50%;background:linear-gradient(135deg,var(--cyan),var(--violet));box-shadow:0 0 18px rgba(34,211,238,.55)}
+.speaker{display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:999px;padding:8px 12px;background:rgba(5,9,16,.72);font-size:13px;font-weight:800;color:#d3deeb}.speaker::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--cyan);box-shadow:0 0 12px rgba(34,211,238,.6)}
+.eyebrow{display:flex;align-items:center;gap:10px;margin-bottom:16px;font-size:14px;font-weight:850;text-transform:uppercase;letter-spacing:.13em;color:#bae6fd}.eyebrow::before{content:"";width:34px;height:1px;background:linear-gradient(90deg,var(--cyan),transparent)}
+h1{font-size:76px;line-height:.99;letter-spacing:-.055em;margin:0;max-width:1180px} h2{font-size:53px;line-height:1.03;letter-spacing:-.045em;margin:0} h3{font-size:20px;line-height:1.18;margin:0 0 8px;letter-spacing:-.02em}
+p{font-size:18px;line-height:1.48;color:#c7d2df;margin:0}.lead{font-size:23px;line-height:1.45;color:#b9c6d6;max-width:1000px}.small{font-size:13px;color:var(--muted)}
+.gradient-text{background:linear-gradient(100deg,#f8fafc 8%,#a5f3fc 48%,#ddd6fe 90%);-webkit-background-clip:text;background-clip:text;color:transparent}
+.card{position:relative;min-width:0;border:1px solid var(--line);background:linear-gradient(180deg,rgba(15,25,42,.84),rgba(8,14,24,.82));border-radius:22px;padding:22px;box-shadow:inset 0 1px rgba(255,255,255,.03),0 20px 55px rgba(0,0,0,.20);overflow:hidden}.card-accent{border-color:rgba(56,189,248,.30)}
+.chip{display:inline-flex;align-items:center;gap:7px;padding:7px 11px;border:1px solid var(--line);border-radius:999px;background:rgba(15,23,42,.68);font-size:13px;font-weight:780;color:#cbd5e1}.chip.cyan{border-color:rgba(34,211,238,.30);color:#a5f3fc}.chip.green{border-color:rgba(52,211,153,.30);color:#a7f3d0}.chip.red{border-color:rgba(251,113,133,.30);color:#fecdd3}.chip.amber{border-color:rgba(251,191,36,.28);color:#fde68a}
+.footer{position:absolute;left:92px;right:92px;bottom:24px;display:grid;grid-template-columns:1fr auto auto;align-items:center;gap:16px;z-index:15}.progress-track{height:3px;background:rgba(148,163,184,.12);border-radius:99px;overflow:hidden}.progress-bar{height:100%;width:0;background:linear-gradient(90deg,var(--cyan),var(--violet));box-shadow:0 0 16px rgba(34,211,238,.42);transition:width .35s ease}.counter{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums;min-width:62px;text-align:right}.nav{display:flex;gap:10px}.nav button,.control{border:1px solid var(--line);background:rgba(15,23,42,.82);color:#e2e8f0;border-radius:12px;padding:10px 13px;font:inherit;font-weight:780;cursor:pointer;transition:.18s ease}.nav button{min-width:118px;height:44px;padding:0 16px;display:inline-flex;align-items:center;justify-content:center;gap:9px}.nav button:hover:not(:disabled),.control:hover:not(:disabled){border-color:rgba(56,189,248,.38);background:rgba(22,34,55,.94)}.nav button:disabled,.control:disabled{opacity:.32;cursor:not-allowed}.control.primary{background:linear-gradient(135deg,#0e7490,#6d28d9);border-color:transparent}
+
+/* slide 1 */
+.hero-layout{display:grid;grid-template-columns:1.07fr .93fr;gap:64px;align-items:center;height:100%}.hero-copy{padding-bottom:40px}.hero-copy .lead{margin-top:26px;max-width:860px}.hero-tags{display:flex;gap:10px;flex-wrap:wrap;margin-top:28px}.resin-visual{position:relative;height:500px}.bottle{position:absolute;width:150px;height:250px;border-radius:28px 28px 38px 38px;border:1px solid rgba(125,211,252,.34);background:linear-gradient(180deg,rgba(8,145,178,.18),rgba(14,116,144,.28));box-shadow:inset 0 0 40px rgba(34,211,238,.10),0 22px 70px rgba(0,0,0,.30)}.bottle::before{content:"";position:absolute;width:64px;height:52px;left:43px;top:-40px;border-radius:14px 14px 4px 4px;background:#111827;border:1px solid rgba(148,163,184,.28)}.bottle .fill{position:absolute;left:12px;right:12px;bottom:12px;border-radius:20px 20px 28px 28px;background:linear-gradient(180deg,rgba(34,211,238,.46),rgba(139,92,246,.55));box-shadow:0 0 30px rgba(34,211,238,.15) inset}.bottle .lbl{position:absolute;inset:0;display:grid;place-items:center;font-weight:900;font-size:31px;letter-spacing:-.04em;text-shadow:0 2px 12px rgba(0,0,0,.6)}.b1{left:40px;top:190px;transform:rotate(-7deg)}.b2{left:245px;top:96px;transform:rotate(3deg);height:290px}.b3{left:455px;top:220px;transform:rotate(8deg);height:220px}.b1 .fill{height:40%}.b2 .fill{height:62%}.b3 .fill{height:88%}.target-ring{position:absolute;right:35px;top:34px;width:190px;height:190px;border-radius:50%;border:2px solid rgba(52,211,153,.48);display:grid;place-items:center;background:radial-gradient(circle,rgba(16,185,129,.14),transparent 68%);box-shadow:0 0 50px rgba(52,211,153,.08)}.target-ring strong{font-size:48px}.target-ring span{font-size:13px;color:#a7f3d0;text-transform:uppercase;letter-spacing:.12em}
+
+/* slide 2 */
+.problem-layout{display:grid;grid-template-columns:.88fr 1.12fr;gap:28px;margin-top:28px}.problem-points{display:flex;flex-direction:column;gap:13px}.point{display:grid;grid-template-columns:42px 1fr;gap:14px;align-items:start;padding:17px 18px;border:1px solid var(--line);border-radius:17px;background:rgba(12,20,34,.68)}.point-num{width:34px;height:34px;border-radius:11px;display:grid;place-items:center;background:rgba(56,189,248,.10);border:1px solid rgba(56,189,248,.24);color:#a5f3fc;font-weight:850}.point p{font-size:16px}.stock-card{min-height:475px;display:grid;grid-template-rows:auto 1fr auto;gap:16px}.stock-row{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.stock-item{border:1px solid var(--line);border-radius:18px;padding:20px;text-align:center;background:rgba(7,16,28,.68)}.stock-item strong{font-size:38px;display:block}.stock-item span{font-size:13px;color:var(--muted)}.goal{display:flex;align-items:center;justify-content:space-between;padding:18px 20px;border:1px solid rgba(52,211,153,.28);background:rgba(6,78,59,.22);border-radius:18px}.goal strong{font-size:36px}.greedy-line{display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:center}.greedy-badge{width:74px;height:74px;border-radius:18px;display:grid;place-items:center;border:1px solid rgba(251,113,133,.28);background:rgba(76,5,25,.36);font-weight:900;color:#fecdd3;font-size:23px}
+
+/* slide 3 */
+.why-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:26px;margin-top:26px}.tree{height:465px;position:relative}.tree svg{width:100%;height:100%}.branch{fill:none;stroke:#5a687b;stroke-width:2}.tnode rect{fill:#0b2738;stroke:rgba(34,211,238,.45);stroke-width:1.3}.tnode text{fill:#e0f2fe;font-weight:850;font-size:15px}.state-panel{display:flex;flex-direction:column;gap:14px}.state-def{padding:24px;border:1px solid rgba(56,189,248,.28);border-radius:20px;background:linear-gradient(180deg,rgba(8,47,73,.44),rgba(7,20,34,.64))}.formula{font:700 26px/1.35 "SFMono-Regular",Consolas,monospace;color:#e0f2fe}.state-list{display:grid;grid-template-columns:1fr 1fr;gap:12px}.mini{padding:17px;border:1px solid var(--line);border-radius:16px;background:rgba(13,22,36,.72)}.mini strong{display:block;margin-bottom:6px}
+
+/* slide 4 */
+.rec-layout{display:grid;grid-template-columns:1.18fr .82fr;gap:24px;margin-top:28px}.rec-main{padding:30px}.rec-eq{font:800 31px/1.45 "SFMono-Regular",Consolas,monospace;color:#f0f9ff;margin:18px 0 22px}.rec-main p{font-size:17px}.base-stack{display:flex;flex-direction:column;gap:14px}.base-stack .card{padding:20px}.base-big{font-size:34px;font-weight:900;color:#a7f3d0}.inf{color:#fecdd3}
+
+/* slide 5 */
+.dp-table-wrap{margin-top:26px}.dp-table{display:grid;grid-template-columns:repeat(7,1fr);gap:10px}.cell{min-height:122px;border:1px solid var(--line);border-radius:17px;background:rgba(10,18,31,.74);padding:14px;text-align:center;display:flex;flex-direction:column;justify-content:center}.cell .amt{font-size:13px;color:var(--muted);margin-bottom:10px}.cell .val{font-size:32px;font-weight:900}.cell.good{border-color:rgba(52,211,153,.26);background:rgba(6,78,59,.18)}.cell.bad{border-color:rgba(251,113,133,.20)}.cell.target{border-color:rgba(34,211,238,.40);box-shadow:0 0 0 1px rgba(34,211,238,.12),0 0 34px rgba(34,211,238,.08)}.table-explain{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-top:18px}.table-explain .card{padding:17px}.table-explain p{font-size:15px}
+
+/* slide 6 */
+.correct-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:26px}.proof-flow{display:flex;flex-direction:column;gap:14px}.proof-step{display:grid;grid-template-columns:44px 1fr;gap:14px;align-items:start;padding:17px;border:1px solid var(--line);border-radius:17px;background:rgba(12,20,34,.70)}.proof-step b{width:36px;height:36px;border-radius:11px;display:grid;place-items:center;background:rgba(34,211,238,.10);border:1px solid rgba(34,211,238,.24);color:#a5f3fc}.metrics{display:grid;grid-template-columns:1fr 1fr;gap:14px}.metric-card{padding:23px;border:1px solid var(--line);border-radius:20px;background:rgba(10,17,29,.78)}.metric{font-size:42px;font-weight:900;letter-spacing:-.05em}.metric-label{font-size:13px;text-transform:uppercase;letter-spacing:.11em;color:var(--muted);margin-top:8px}.reuse{margin-top:14px;padding:18px;border:1px solid rgba(139,92,246,.25);background:rgba(76,29,149,.14);border-radius:18px}
+
+/* slide 7 */
+.code-layout{display:grid;grid-template-columns:1.25fr .75fr;gap:24px;margin-top:22px}.code{height:515px;margin:0;padding:20px 22px;overflow:hidden;border:1px solid rgba(148,163,184,.18);border-radius:22px;background:#030712;color:#cbd5e1;font:14px/1.48 "SFMono-Regular",Consolas,"Liberation Mono",monospace;white-space:pre}.kw{color:#c084fc}.fn{color:#67e8f9}.num{color:#fbbf24}.cm{color:#64748b}.note-list{display:grid;grid-template-rows:repeat(4,1fr);gap:12px}.note-card{padding:17px 18px;border:1px solid var(--line);border-radius:17px;background:rgba(13,22,36,.76)}.note-card strong{display:block;margin-bottom:5px}.note-card p{font-size:14.5px}
+
+/* slide 8 simulation */
+.demo-head{display:flex;align-items:end;justify-content:space-between;gap:24px}.legend{display:flex;gap:9px;flex-wrap:wrap}.dot{width:8px;height:8px;border-radius:50%;background:#64748b}.dot.done{background:var(--green)}.dot.current{background:var(--cyan)}.dot.inf{background:var(--red)}
+.demo-layout{display:grid;grid-template-columns:1fr 420px;gap:22px;margin-top:18px}.demo-main{height:535px;border:1px solid var(--line);border-radius:24px;background:radial-gradient(circle at 50% 30%,rgba(34,211,238,.06),transparent 55%),rgba(5,10,18,.58);padding:24px;display:grid;grid-template-rows:auto 1fr auto;gap:18px}.demo-target{display:flex;align-items:center;justify-content:space-between}.demo-target strong{font-size:30px}.barrow{display:grid;grid-template-columns:repeat(7,1fr);gap:9px;align-items:stretch}.dpcell{border:1px solid var(--line);border-radius:15px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:12px;min-height:138px;background:rgba(10,18,31,.72);transition:.25s ease}.dpcell .a{font-size:12px;color:var(--muted);margin-bottom:8px}.dpcell .v{font-size:30px;font-weight:900}.dpcell.done{border-color:rgba(52,211,153,.30);background:rgba(6,78,59,.17)}.dpcell.current{border-color:rgba(34,211,238,.50);background:rgba(8,47,73,.34);box-shadow:0 0 30px rgba(34,211,238,.08)}.dpcell.inf{border-color:rgba(251,113,133,.20)}.choice-strip{display:flex;gap:10px;flex-wrap:wrap}.choice{padding:9px 12px;border:1px solid var(--line);border-radius:11px;background:rgba(15,23,42,.72);font-size:13px}.choice.on{border-color:rgba(251,191,36,.36);color:#fde68a;background:rgba(120,53,15,.18)}
+.demo-panel{height:535px;display:grid;grid-template-rows:auto auto 1fr auto auto;gap:10px}.demo-info{padding:14px 15px;border:1px solid var(--line);border-radius:15px;background:rgba(12,20,34,.75)}.demo-info h3{font-size:12px;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);margin-bottom:9px}.status-box{display:flex;align-items:center;padding:16px;border:1px solid var(--line);border-radius:16px;background:linear-gradient(180deg,rgba(13,22,36,.87),rgba(8,15,26,.87));font-size:14.5px;line-height:1.48;color:#cbd5e1}.demo-controls{display:grid;grid-template-columns:1.15fr 1fr 1fr .9fr;gap:6px}.demo-controls .control{padding:11px 6px;font-size:11.5px;white-space:nowrap}.demo-step{font-size:12px;color:var(--muted);text-align:right}.formula-small{font:700 16px/1.35 "SFMono-Regular",Consolas,monospace;color:#e0f2fe}
+
+/* slide 9 */
+.edge-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:26px}.case{min-height:430px;display:flex;flex-direction:column;justify-content:center}.case .hero-num{font-size:72px;font-weight:950;letter-spacing:-.06em;margin-bottom:10px}.case p{font-size:17px}.case.ok{border-color:rgba(52,211,153,.26)}.case.no{border-color:rgba(251,113,133,.26)}.case-row{display:flex;gap:10px;flex-wrap:wrap;margin:20px 0}.pill{padding:9px 12px;border-radius:10px;border:1px solid var(--line);background:rgba(15,23,42,.72);font-weight:800}
+
+/* slide 10 */
+.result-layout{display:grid;grid-template-columns:1.05fr .95fr;gap:24px;margin-top:28px}.result-kpi{display:grid;grid-template-columns:1fr 1fr;gap:14px}.kpi{padding:24px;border:1px solid var(--line);border-radius:20px;background:rgba(10,17,29,.78)}.kpi strong{font-size:48px;display:block;letter-spacing:-.05em}.combo{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:16px}.combo .bigpill{padding:14px 18px;border-radius:14px;border:1px solid rgba(52,211,153,.25);background:rgba(6,78,59,.20);font-size:22px;font-weight:900}.greedy-compare{padding:26px}.compare-row{display:grid;grid-template-columns:110px 1fr;gap:16px;align-items:center;padding:15px 0;border-bottom:1px solid var(--line)}.compare-row:last-child{border-bottom:none}.compare-row .label{font-weight:900}.badx{color:#fecdd3}.goodx{color:#a7f3d0}
+
+/* slide 11 */
+.general-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:30px}.usecase{min-height:330px;padding:24px;border:1px solid var(--line);border-radius:22px;background:rgba(10,17,29,.76);display:flex;flex-direction:column}.usecase .icon{width:58px;height:58px;border-radius:18px;display:grid;place-items:center;font-size:25px;background:rgba(34,211,238,.10);border:1px solid rgba(34,211,238,.24);margin-bottom:18px}.usecase p{font-size:16px}.usecase .mini-formula{margin-top:auto;padding-top:16px;font:700 14px/1.35 "SFMono-Regular",Consolas,monospace;color:#bae6fd}
+
+/* slide 12 */
+.final-layout{display:grid;grid-template-columns:1.1fr .9fr;gap:28px;margin-top:26px}.takeaways{display:flex;flex-direction:column;gap:14px}.take{display:grid;grid-template-columns:42px 1fr;gap:14px;align-items:start;padding:18px;border:1px solid var(--line);border-radius:17px;background:rgba(12,20,34,.68)}.take b{width:34px;height:34px;border-radius:11px;display:grid;place-items:center;background:rgba(34,211,238,.10);border:1px solid rgba(34,211,238,.24);color:#a5f3fc}.rubric{padding:25px}.rubric-list{display:flex;flex-direction:column;gap:11px;margin-top:14px}.rubric-item{display:flex;align-items:center;gap:11px;padding:11px 12px;border:1px solid var(--line);border-radius:13px;background:rgba(15,23,42,.55);font-size:15px}.check{width:23px;height:23px;border-radius:50%;display:grid;place-items:center;background:rgba(52,211,153,.12);border:1px solid rgba(52,211,153,.30);color:#a7f3d0;font-weight:900}
+
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}}
+</style>
+
+<style id="ultra-theme">
+:root{
+  --glass:rgba(7,12,22,.56);
+  --glass2:rgba(12,19,33,.72);
+  --edge:rgba(125,211,252,.22);
+}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;background:
+  radial-gradient(50% 60% at 12% 12%,rgba(34,211,238,.10),transparent 60%),
+  radial-gradient(35% 45% at 84% 18%,rgba(168,85,247,.10),transparent 60%),
+  radial-gradient(42% 52% at 60% 88%,rgba(56,189,248,.08),transparent 60%);
+  filter:blur(16px);animation:aurora 14s ease-in-out infinite alternate;opacity:.95}
+@keyframes aurora{0%{transform:translate3d(0,0,0) scale(1)}50%{transform:translate3d(-12px,8px,0) scale(1.04)}100%{transform:translate3d(14px,-10px,0) scale(1.08)}}
+#stage{box-shadow:0 30px 120px rgba(0,0,0,.45), 0 0 0 1px rgba(255,255,255,.03) inset}
+#stage::before{content:"";position:absolute;inset:0;pointer-events:none;background:
+ linear-gradient(180deg,rgba(255,255,255,.035),transparent 22%,transparent 78%,rgba(255,255,255,.025)),
+ repeating-linear-gradient(180deg,rgba(255,255,255,.025) 0 1px, transparent 1px 4px);
+ mix-blend-mode:screen;opacity:.16}
+.ambient{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.ambient .orb{position:absolute;border-radius:50%;filter:blur(5px);opacity:.55;mix-blend-mode:screen;animation:floatOrb var(--dur) ease-in-out infinite alternate}
+.ambient .orb::after{content:"";position:absolute;inset:-2px;border-radius:inherit;border:1px solid rgba(255,255,255,.08)}
+@keyframes floatOrb{from{transform:translateY(0) translateX(0) scale(1)}to{transform:translateY(-26px) translateX(16px) scale(1.08)}}
+.ambient .line{position:absolute;height:1px;background:linear-gradient(90deg,transparent,rgba(125,211,252,.34),transparent);opacity:.5;animation:driftline 9s linear infinite}
+@keyframes driftline{from{transform:translateX(-6%)}to{transform:translateX(8%)}}
+.card,.stock-item,.point,.note-card,.metric-card,.usecase,.proof-step,.case,.kpi,.dpcell,.demo-info,.status-box,.demo-step,.goal,.result-kpi,.compare-row,.stock-card,.mini,.take,.rubric-item{backdrop-filter: blur(14px)}
+.card{background:linear-gradient(180deg,rgba(12,19,33,.76),rgba(7,12,22,.68));border-color:rgba(125,211,252,.16);box-shadow:0 10px 40px rgba(0,0,0,.26), inset 0 1px 0 rgba(255,255,255,.06);}
+.card::before{content:"";position:absolute;inset:0;border-radius:inherit;padding:1px;background:linear-gradient(135deg,rgba(125,211,252,.25),transparent 28%,transparent 68%,rgba(167,139,250,.25));-webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none;opacity:.9}
+.slide.active .card,.slide.active .stock-item,.slide.active .point,.slide.active .usecase,.slide.active .kpi,.slide.active .proof-step,.slide.active .case{animation:cardIn .7s cubic-bezier(.2,.8,.2,1) both}
+.slide.active .card:nth-of-type(2){animation-delay:.05s}.slide.active .card:nth-of-type(3){animation-delay:.1s}.slide.active .card:nth-of-type(4){animation-delay:.15s}
+@keyframes cardIn{from{opacity:0;transform:translateY(18px) scale(.985)}to{opacity:1;transform:none}}
+h1,h2{filter:drop-shadow(0 12px 28px rgba(0,0,0,.25))}
+.gradient-text{background:linear-gradient(92deg,#ffffff 0%,#ccfbf1 28%,#a5f3fc 52%,#ddd6fe 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
+.brand{letter-spacing:.14em;color:#e6f0fb;text-shadow:0 0 18px rgba(125,211,252,.16)}
+.brand-dot{box-shadow:0 0 0 6px rgba(34,211,238,.10),0 0 18px rgba(34,211,238,.7),0 0 34px rgba(139,92,246,.4)}
+.speaker{background:linear-gradient(180deg,rgba(7,12,22,.88),rgba(15,23,42,.62));border-color:rgba(125,211,252,.18);box-shadow:0 6px 24px rgba(0,0,0,.22)}
+.eyebrow{color:#d7f7ff;text-shadow:0 0 18px rgba(34,211,238,.15)}
+.chip,.control,.nav button,.speaker{backdrop-filter:blur(12px)}
+.chip{background:linear-gradient(180deg,rgba(15,23,42,.76),rgba(8,14,24,.66));box-shadow:inset 0 1px 0 rgba(255,255,255,.04)}
+.footer{padding:0 0 6px}
+.progress-track{height:4px;background:rgba(148,163,184,.13);box-shadow:inset 0 1px 1px rgba(255,255,255,.04)}
+.progress-bar{box-shadow:0 0 18px rgba(34,211,238,.55),0 0 36px rgba(167,139,250,.26)}
+.nav button,.control{background:linear-gradient(180deg,rgba(15,23,42,.88),rgba(13,18,31,.82));border-color:rgba(125,211,252,.16);box-shadow:0 8px 20px rgba(0,0,0,.18)}
+.nav button:hover:not(:disabled),.control:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 12px 30px rgba(0,0,0,.22),0 0 0 1px rgba(56,189,248,.14) inset}
+.control.primary{background:linear-gradient(135deg,rgba(14,165,233,.92),rgba(109,40,217,.92));box-shadow:0 10px 30px rgba(14,165,233,.24),0 10px 30px rgba(109,40,217,.18)}
+.bottle{backdrop-filter:blur(8px);box-shadow:inset 0 0 60px rgba(34,211,238,.09),0 30px 80px rgba(0,0,0,.36)}
+.bottle .fill{animation:liquid 4.6s ease-in-out infinite alternate}
+@keyframes liquid{from{filter:saturate(1)}to{filter:saturate(1.28) brightness(1.08)}}
+.target-ring{box-shadow:0 0 0 1px rgba(52,211,153,.18) inset,0 0 60px rgba(52,211,153,.10);animation:pulseRing 3.4s ease-in-out infinite}
+@keyframes pulseRing{50%{transform:scale(1.035)}}
+.point,.stock-item,.goal,.stock-card,.metric-card,.usecase,.note-card,.demo-info,.status-box,.demo-step,.compare-row,.take{background:linear-gradient(180deg,rgba(13,20,35,.72),rgba(8,13,24,.72));border-color:rgba(125,211,252,.12)}
+.dp-table .cell,.dpcell{position:relative;overflow:hidden}
+.dp-table .cell::after,.dpcell::after{content:"";position:absolute;top:-50%;left:-120%;width:65%;height:200%;transform:rotate(24deg);background:linear-gradient(90deg,transparent,rgba(255,255,255,.10),transparent);opacity:.7;animation:shine 5.4s linear infinite}
+@keyframes shine{to{left:180%}}
+.demo-main,.demo-panel{border:1px solid rgba(125,211,252,.14);background:linear-gradient(180deg,rgba(11,17,29,.72),rgba(7,12,22,.7));border-radius:24px;box-shadow:0 10px 45px rgba(0,0,0,.22)}
+.status-box{line-height:1.45}
+.code{position:relative;background:linear-gradient(180deg,rgba(6,11,19,.96),rgba(4,8,15,.96));border:1px solid rgba(125,211,252,.14);box-shadow:0 14px 38px rgba(0,0,0,.34)}
+.code::before{content:"●  ●  ●";position:absolute;top:12px;left:16px;color:#fca5a5;letter-spacing:.28em;font-size:11px;opacity:.8}
+.code{padding-top:34px}
+#demoSlide .demo-main{position:relative}
+#demoSlide .demo-main::after{content:"";position:absolute;inset:0;border-radius:24px;padding:1px;background:linear-gradient(135deg,rgba(34,211,238,.28),transparent 34%,transparent 68%,rgba(167,139,250,.28));-webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none}
+.legend .chip .dot{box-shadow:0 0 14px currentColor}
+.kpi strong,.hero-num,.metric,.base-big,.rec-eq,.formula{letter-spacing:-.04em}
+.result-layout .card-accent{background:linear-gradient(180deg,rgba(8,47,73,.32),rgba(17,24,39,.72))}
+.usecase .icon{filter:drop-shadow(0 10px 22px rgba(0,0,0,.3))}
+.take b,.point-num,.goal strong,.metric,.kpi strong{ text-shadow:0 0 20px rgba(56,189,248,.15)}
+.rubric{background:linear-gradient(180deg,rgba(5,48,53,.22),rgba(7,12,22,.75))}
+.small{letter-spacing:.03em}
+</style>
+
+</head>
+<body>
+<div id="viewport"><div id="stage">
+<div class="ambient" aria-hidden="true">
+  <div class="orb" style="--dur:9s;width:210px;height:210px;left:-40px;top:90px;background:radial-gradient(circle at 30% 30%,rgba(34,211,238,.30),rgba(34,211,238,.04) 65%,transparent 72%)"></div>
+  <div class="orb" style="--dur:12s;width:140px;height:140px;left:1230px;top:120px;background:radial-gradient(circle at 30% 30%,rgba(167,139,250,.26),rgba(167,139,250,.04) 65%,transparent 72%)"></div>
+  <div class="orb" style="--dur:11s;width:170px;height:170px;left:1180px;top:650px;background:radial-gradient(circle at 30% 30%,rgba(52,211,153,.18),rgba(52,211,153,.03) 65%,transparent 72%)"></div>
+  <div class="orb" style="--dur:8s;width:90px;height:90px;left:280px;top:720px;background:radial-gradient(circle at 30% 30%,rgba(96,165,250,.24),rgba(96,165,250,.02) 70%,transparent 75%)"></div>
+  <div class="line" style="top:104px;left:120px;width:580px"></div>
+  <div class="line" style="top:318px;left:780px;width:420px;animation-duration:7.5s"></div>
+  <div class="line" style="top:720px;left:220px;width:720px;animation-duration:10s"></div>
+</div>
+
+<section class="slide active" data-speaker="Persona 1">
+  <div class="topbar"><div class="brand"><span class="brand-dot"></span>Programación Dinámica · ResinFlow</div><div class="speaker">Persona 1</div></div>
+  <div class="hero-layout">
+    <div class="hero-copy">
+      <div class="eyebrow reveal">Problema aplicado</div>
+      <h1 class="gradient-text reveal d1">Preparar un pedido exacto de resina usando el menor número de envases</h1>
+      <p class="lead reveal d2">Un laboratorio de impresión 3D dispone de envases reutilizables de distintos tamaños. El reto es alcanzar exactamente el volumen solicitado con la menor cantidad de envases.</p>
+      <div class="hero-tags reveal d3"><span class="chip cyan">Programación dinámica</span><span class="chip">Estado dp[x]</span><span class="chip green">O(A · k)</span></div>
+    </div>
+    <div class="resin-visual reveal d2" aria-hidden="true">
+      <div class="bottle b1"><div class="fill"></div><div class="lbl">200</div></div>
+      <div class="bottle b2"><div class="fill"></div><div class="lbl">300</div></div>
+      <div class="bottle b3"><div class="fill"></div><div class="lbl">500</div></div>
+      <div class="target-ring"><div style="text-align:center"><strong>600</strong><br><span>ml objetivo</span></div></div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-speaker="Persona 1">
+  <div class="topbar"><div class="brand"><span class="brand-dot"></span>01 · Problema</div><div class="speaker">Persona 1</div></div>
+  <div class="eyebrow reveal">Situación planteada</div>
+  <h2 class="reveal d1">¿Cómo completar 600 ml exactamente con el menor número de envases?</h2>
+  <div class="problem-layout">
+    <div class="problem-points reveal d2">
+      <div class="point"><div class="point-num">1</div><div><h3>Stock disponible</h3><p>Envases de 200 ml 300 ml y 500 ml con disponibilidad ilimitada.</p></div></div>
+      <div class="point"><div class="point-num">2</div><div><h3>Objetivo exacto</h3><p>El pedido debe sumar exactamente 600 ml no aproximarse.</p></div></div>
+      <div class="point"><div class="point-num">3</div><div><h3>Optimización</h3><p>Entre todas las combinaciones válidas queremos usar el menor número de envases.</p></div></div>
+      <div class="point"><div class="point-num">4</div><div><h3>Sin solución</h3><p>Si ningún conjunto alcanza el volumen exacto el sistema debe indicarlo.</p></div></div>
+    </div>
+    <div class="card stock-card reveal d3">
+      <div class="stock-row">
+        <div class="stock-item"><strong>200</strong><span>ml</span></div>
+        <div class="stock-item"><strong>300</strong><span>ml</span></div>
+        <div class="stock-item"><strong>500</strong><span>ml</span></div>
+      </div>
+      <div class="greedy-line"><div class="greedy-badge">!</div><div><h3>El enfoque “tomar siempre el envase más grande” puede fallar</h3><p>Si elegimos 500 ml primero queda un residuo de 100 ml que no podemos completar aunque sí existe una solución mejor: 300 + 300.</p></div></div>
+      <div class="goal"><div><div class="small">PEDIDO</div><strong>600 ml</strong></div><span class="chip green">mínimo número de envases</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-speaker="Persona 1">
+  <div class="topbar"><div class="brand"><span class="brand-dot"></span>02 · ¿Por qué DP?</div><div class="speaker">Persona 1</div></div>
+  <div class="eyebrow reveal">Idea central</div>
+  <h2 class="reveal d1">El problema grande se apoya en respuestas óptimas de problemas más pequeños</h2>
+  <div class="why-grid">
+    <div class="card tree reveal d2">
+      <svg viewBox="0 0 760 465" role="img" aria-label="Árbol de subproblemas para 600 mililitros">
+        <path class="branch" d="M380 70 C280 115 220 145 170 190"/><path class="branch" d="M380 70 C380 120 380 145 380 190"/><path class="branch" d="M380 70 C485 115 545 145 590 190"/>
+        <path class="branch" d="M170 230 C145 270 125 300 110 345"/><path class="branch" d="M380 230 C330 275 300 305 275 345"/><path class="branch" d="M380 230 C430 275 465 305 500 345"/>
+        <g class="tnode" transform="translate(300 28)"><rect width="160" height="58" rx="14"/><text x="80" y="36" text-anchor="middle">dp[600]</text></g>
+        <g class="tnode" transform="translate(90 190)"><rect width="160" height="58" rx="14"/><text x="80" y="36" text-anchor="middle">dp[400]</text></g>
+        <g class="tnode" transform="translate(300 190)"><rect width="160" height="58" rx="14"/><text x="80" y="36" text-anchor="middle">dp[300]</text></g>
+        <g class="tnode" transform="translate(510 190)"><rect width="160" height="58" rx="14"/><text x="80" y="36" text-anchor="middle">dp[100]</text></g>
+        <g class="tnode" transform="translate(30 345)"><rect width="160" height="58" rx="14"/><text x="80" y="36" text-anchor="middle">dp[200]</text></g>
+        <g class="tnode" transform="translate(195 345)"><rect width="160" height="58" rx="14"/><text x="80" y="36" text-anchor="middle">dp[0]</text></g>
+        <g class="tnode" transform="translate(420 345)"><rect width="160" height="58" rx="14"/><text x="80" y="36" text-anchor="middle">dp[100]</text></g>
+      </svg>
+    </div>
+    <div class="state-panel reveal d3">
+      <div class="state-def"><span class="chip cyan">Estado</span><div class="formula" style="margin-top:14px">dp[x] = mínimo número de envases para formar exactamente x ml</div></div>
+      <div class="state-list">
+        <div class="mini"><strong>Subproblema</strong><p>¿Cuál es la mejor forma de completar un volumen menor?</p></div>
+        <div class="mini"><strong>Solapamiento</strong><p>Los mismos valores como dp[100] pueden aparecer desde decisiones distintas.</p></div>
+        <div class="mini"><strong>Memoria</strong><p>Calculamos cada estado una sola vez y reutilizamos su resultado.</p></div>
+        <div class="mini"><strong>Objetivo final</strong><p>La respuesta buscada será dp[600].</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-speaker="Persona 2">
+  <div class="topbar"><div class="brand"><span class="brand-dot"></span>03 · Recurrencia</div><div class="speaker">Persona 2</div></div>
+  <div class="eyebrow reveal">Cómo se conectan los estados</div>
+  <h2 class="reveal d1">Probar un envase y aprovechar la mejor respuesta que ya conocemos</h2>
+  <div class="rec-layout">
+    <div class="card rec-main reveal d2">
+      <span class="chip cyan">Relación de recurrencia</span>
+      <div class="rec-eq">dp[x] = min( dp[x], dp[x - v] + 1 )</div>
+      <p>Para cada volumen <strong>x</strong> probamos cada tamaño <strong>v</strong>. Si el estado <strong>x - v</strong> ya podía formarse entonces usar un envase de tamaño <strong>v</strong> produce una nueva solución candidata.</p>
+      <div class="card" style="margin-top:22px;padding:19px;background:rgba(8,47,73,.25);border-color:rgba(34,211,238,.24)"><h3>Ejemplo para 600 ml</h3><p><strong>v = 300</strong> → miramos dp[300] + 1. Como dp[300] = 1 entonces obtenemos 2 envases para 600 ml.</p></div>
+    </div>
+    <div class="base-stack reveal d3">
+      <div class="card"><span class="chip green">Caso base</span><div class="base-big" style="margin-top:12px">dp[0] = 0</div><p style="margin-top:8px">Para formar 0 ml no necesitamos ningún envase.</p></div>
+      <div class="card"><span class="chip red">Inicialización</span><div class="base-big inf" style="margin-top:12px">dp[x] = ∞</div><p style="margin-top:8px">Los demás volúmenes comienzan como imposibles hasta demostrar lo contrario.</p></div>
+      <div class="card"><span class="chip amber">Respuesta imposible</span><p style="margin-top:10px">Si dp[objetivo] sigue en ∞ al terminar entonces no existe una combinación exacta.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-speaker="Persona 2">
+  <div class="topbar"><div class="brand"><span class="brand-dot"></span>04 · Tabla DP</div><div class="speaker">Persona 2</div></div>
+  <div class="eyebrow reveal">Construcción bottom-up</div>
+  <h2 class="reveal d1">Llenamos respuestas pequeñas hasta llegar al objetivo</h2>
+  <div class="dp-table-wrap reveal d2">
+    <div class="dp-table">
+      <div class="cell good"><div class="amt">0 ml</div><div class="val">0</div><div class="small">caso base</div></div>
+      <div class="cell bad"><div class="amt">100 ml</div><div class="val">∞</div><div class="small">imposible</div></div>
+      <div class="cell good"><div class="amt">200 ml</div><div class="val">1</div><div class="small">200</div></div>
+      <div class="cell good"><div class="amt">300 ml</div><div class="val">1</div><div class="small">300</div></div>
+      <div class="cell good"><div class="amt">400 ml</div><div class="val">2</div><div class="small">200 + 200</div></div>
+      <div class="cell good"><div class="amt">500 ml</div><div class="val">1</div><div class="small">500</div></div>
+      <div class="cell target"><div class="amt">600 ml</div><div class="val">2</div><div class="small">300 + 300</div></div>
+    </div>
+    <div class="table-explain">
+      <div class="card"><h3>dp[200] = 1</h3><p>Un solo envase de 200 ml.</p></div>
+      <div class="card"><h3>dp[400] = 2</h3><p>Tomamos dp[200] y agregamos otro envase de 200 ml.</p></div>
+      <div class="card card-accent"><h3>dp[600] = 2</h3><p>La mejor opción es dp[300] + 1 → 300 + 300.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-speaker="Persona 2">
+  <div class="topbar"><div class="brand"><span class="brand-dot"></span>05 · Por qué funciona</div><div class="speaker">Persona 2</div></div>
+  <div class="eyebrow reveal">Propiedad óptima y costo</div>
+  <h2 class="reveal d1">Cada decisión consulta una respuesta óptima ya calculada</h2>
+  <div class="correct-grid">
+    <div class="proof-flow reveal d2">
+      <div class="proof-step"><b>1</b><div><h3>Solución óptima por subproblema</h3><p>Cuando calculamos dp[x] comparamos todas las posibles últimas elecciones de envase.</p></div></div>
+      <div class="proof-step"><b>2</b><div><h3>No repetimos trabajo</h3><p>dp[x - v] ya está calculado y se reutiliza en lugar de resolverlo de nuevo.</p></div></div>
+      <div class="proof-step"><b>3</b><div><h3>Elegimos el mínimo</h3><p>La función min conserva la mejor alternativa encontrada para cada volumen.</p></div></div>
+      <div class="reuse"><span class="chip">No acotada</span><p style="margin-top:10px">Los tamaños pueden reutilizarse ilimitadamente por eso un mismo envase puede formar parte de muchos estados sucesivos.</p></div>
+    </div>
+    <div class="reveal d3">
+      <div class="metrics">
+        <div class="metric-card"><div class="metric">O(A · k)</div><div class="metric-label">Tiempo</div><p style="font-size:14px;margin-top:10px">A = volumen objetivo · k = tamaños disponibles.</p></div>
+        <div class="metric-card"><div class="metric">O(A)</div><div class="metric-label">Espacio</div><p style="font-size:14px;margin-top:10px">Solo guardamos la tabla dp.</p></div>
+      </div>
+      <div class="card" style="margin-top:14px;padding:23px"><h3>¿Por qué no greedy?</h3><p>Greedy toma una decisión local. DP compara todas las últimas elecciones posibles y conserva la mejor respuesta global para cada estado.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-speaker="Persona 3">
+  <div class="topbar"><div class="brand"><span class="brand-dot"></span>06 · Implementación</div><div class="speaker">Persona 3</div></div>
+  <div class="eyebrow reveal">Código en Python</div>
+  <h2 class="reveal d1">El código sigue exactamente la definición del estado y la recurrencia</h2>
+  <div class="code-layout">
+<pre class="code reveal d2"><span class="kw">def</span> <span class="fn">min_envases</span>(tamanos, objetivo):
+    INF = objetivo + <span class="num">1</span>
+    dp = [INF] * (objetivo + <span class="num">1</span>)
+    eleccion = [-<span class="num">1</span>] * (objetivo + <span class="num">1</span>)
+
+    dp[<span class="num">0</span>] = <span class="num">0</span>                 <span class="cm"># caso base</span>
+
+    <span class="kw">for</span> x <span class="kw">in</span> range(<span class="num">1</span>, objetivo + <span class="num">1</span>):
+        <span class="kw">for</span> v <span class="kw">in</span> tamanos:
+            <span class="kw">if</span> v &lt;= x <span class="kw">and</span> dp[x - v] != INF:
+                candidato = dp[x - v] + <span class="num">1</span>
+                <span class="kw">if</span> candidato &lt; dp[x]:
+                    dp[x] = candidato
+                    eleccion[x] = v
+
+    <span class="kw">if</span> dp[objetivo] == INF:
+        <span class="kw">return</span> <span class="kw">None</span>
+
+    combinacion = []
+    x = objetivo
+    <span class="kw">while</span> x &gt; <span class="num">0</span>:
+        combinacion.append(eleccion[x])
+        x -= eleccion[x]
+
+    <span class="kw">return</span> dp[objetivo], combinacion</pre>
+    <div class="note-list reveal d3">
+      <div class="note-card"><strong>Estado</strong><p>dp[x] guarda la mejor respuesta conocida para x ml.</p></div>
+      <div class="note-card"><strong>Recurrencia</strong><p>El candidato es dp[x - v] + 1.</p></div>
+      <div class="note-card"><strong>Reconstrucción</strong><p>eleccion[x] permite recuperar qué envases forman la solución.</p></div>
+      <div class="note-card"><strong>Imposible</strong><p>Si dp[objetivo] sigue en INF retornamos None.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-speaker="Persona 3" id="demoSlide">
+  <div class="topbar"><div class="brand"><span class="brand-dot"></span>07 · Demostración</div><div class="speaker">Persona 3</div></div>
+  <div class="demo-head">
+    <div><div class="eyebrow reveal">La tabla en movimiento</div><h2 class="reveal d1">Simulación lenta de la programación dinámica</h2></div>
+    <div class="legend reveal d2"><span class="chip"><span class="dot done"></span>Calculado</span><span class="chip"><span class="dot current"></span>Estado actual</span><span class="chip"><span class="dot inf"></span>Imposible</span></div>
+  </div>
+  <div class="demo-layout">
+    <div class="demo-main reveal d2">
+      <div class="demo-target"><div><div class="small">OBJETIVO</div><strong>600 ml</strong></div><span class="chip cyan">tamaños 200 · 300 · 500</span></div>
+      <div class="barrow" id="dpRow"></div>
+      <div class="choice-strip" id="choiceStrip"></div>
+    </div>
+    <div class="demo-panel reveal d3">
+      <div class="demo-info"><h3>Estado que calculamos</h3><div class="formula-small" id="demoState">dp[0] = 0</div></div>
+      <div class="demo-info"><h3>Mejor opción conocida</h3><div id="demoBest" style="font-weight:900;color:#a7f3d0">Caso base</div></div>
+      <div class="status-box" id="demoStatus">Pulsa <strong style="margin:0 4px;color:#a5f3fc">Paso →</strong> para construir la tabla con calma.</div>
+      <div class="demo-controls"><button class="control primary" id="autoBtn">▶ Auto lento</button><button class="control" id="demoPrevBtn">← Atrás</button><button class="control" id="demoNextBtn">Paso →</button><button class="control" id="resetBtn">Reiniciar</button></div>
+      <div class="demo-step" id="demoStep">Paso 0</div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-speaker="Persona 3">
+  <div class="topbar"><div class="brand"><span class="brand-dot"></span>08 · Casos borde</div><div class="speaker">Persona 3</div></div>
+  <div class="eyebrow reveal">La solución también debe saber cuándo decir “no”</div>
+  <h2 class="reveal d1">Casos base e imposibles son parte del algoritmo no excepciones</h2>
+  <div class="edge-grid">
+    <div class="card case ok reveal d2"><span class="chip green">Caso base</span><div class="hero-num">0 ml</div><p>Para un pedido de 0 ml la respuesta es 0 envases. Es el punto de partida que permite construir los demás estados.</p><div class="case-row"><span class="pill">dp[0] = 0</span><span class="pill">respuesta inmediata</span></div></div>
+    <div class="card case no reveal d3"><span class="chip red">Sin solución</span><div class="hero-num">100 ml</div><p>Con tamaños 200 300 y 500 no existe una combinación exacta para 100 ml. Su estado permanece en ∞ y el sistema retorna que no hay solución.</p><div class="case-row"><span class="pill">dp[100] = ∞</span><span class="pill">return None</span></div></div>
+  </div>
+</section>
+
+<section class="slide" data-speaker="Persona 4">
+  <div class="topbar"><div class="brand"><span class="brand-dot"></span>09 · Resultados</div><div class="speaker">Persona 4</div></div>
+  <div class="eyebrow reveal">Qué obtuvo el algoritmo</div>
+  <h2 class="reveal d1">Para 600 ml la solución óptima usa solo 2 envases</h2>
+  <div class="result-layout">
+    <div class="reveal d2">
+      <div class="result-kpi"><div class="kpi"><span class="small">RESULTADO</span><strong>2</strong><p>envases mínimos</p></div><div class="kpi"><span class="small">VOLUMEN</span><strong>600</strong><p>ml exactos</p></div></div>
+      <div class="card card-accent" style="margin-top:14px"><h3>Combinación reconstruida</h3><div class="combo"><span class="bigpill">300 ml</span><span style="font-size:26px;color:#64748b">+</span><span class="bigpill">300 ml</span><span style="font-size:26px;color:#64748b">=</span><span class="bigpill">600 ml</span></div></div>
+    </div>
+    <div class="card greedy-compare reveal d3"><span class="chip amber">Comparación</span><h3 style="margin-top:14px">DP evita una decisión local equivocada</h3><div class="compare-row"><div class="label badx">Greedy</div><div><strong>500 ml primero</strong><p style="font-size:14px">Quedan 100 ml y el camino se bloquea.</p></div></div><div class="compare-row"><div class="label goodx">DP</div><div><strong>Compara todas las opciones</strong><p style="font-size:14px">Descubre que 300 + 300 sí forma 600 con solo 2 envases.</p></div></div></div>
+  </div>
+</section>
+
+<section class="slide" data-speaker="Persona 4">
+  <div class="topbar"><div class="brand"><span class="brand-dot"></span>10 · Generalización</div><div class="speaker">Persona 4</div></div>
+  <div class="eyebrow reveal">La misma idea aparece en muchos problemas</div>
+  <h2 class="reveal d1">Lo importante no son los envases sino reconocer el patrón de estados y decisiones</h2>
+  <div class="general-grid">
+    <div class="usecase reveal d2"><div class="icon">⚙</div><h3>Producción</h3><p>Completar una cantidad objetivo usando piezas de tamaños conocidos minimizando el número de unidades.</p><div class="mini-formula">dp[x] = min piezas para x</div></div>
+    <div class="usecase reveal d3"><div class="icon">▦</div><h3>Logística</h3><p>Combinar capacidades discretas para completar un pedido exacto con la menor cantidad de contenedores.</p><div class="mini-formula">estado + decisión + recurrencia</div></div>
+    <div class="usecase reveal d4"><div class="icon">⌘</div><h3>Software</h3><p>Problemas como Coin Change usan exactamente este patrón de programación dinámica no acotada.</p><div class="mini-formula">O(A · k) tiempo · O(A) espacio</div></div>
+  </div>
+</section>
+
+<section class="slide" data-speaker="Persona 4">
+  <div class="topbar"><div class="brand"><span class="brand-dot"></span>11 · Cierre</div><div class="speaker">Persona 4</div></div>
+  <div class="eyebrow reveal">Conclusión y cumplimiento</div>
+  <h2 class="reveal d1">La programación dinámica convierte muchas decisiones repetidas en una solución óptima y explicable</h2>
+  <div class="final-layout">
+    <div class="takeaways reveal d2">
+      <div class="take"><b>1</b><div><h3>Estado claro</h3><p>dp[x] responde una pregunta concreta: cuántos envases mínimos forman exactamente x ml.</p></div></div>
+      <div class="take"><b>2</b><div><h3>Recurrencia reutilizable</h3><p>Cada estado prueba una última elección y reutiliza la respuesta óptima del volumen restante.</p></div></div>
+      <div class="take"><b>3</b><div><h3>Resultado comprobable</h3><p>Para 600 ml obtenemos 2 envases de 300 ml y detectamos correctamente casos imposibles.</p></div></div>
+    </div>
+    <div class="card rubric reveal d3"><span class="chip green">La presentación cubre</span><div class="rubric-list"><div class="rubric-item"><span class="check">✓</span>Problema planteado</div><div class="rubric-item"><span class="check">✓</span>Algoritmo de programación dinámica</div><div class="rubric-item"><span class="check">✓</span>Estados y subproblemas</div><div class="rubric-item"><span class="check">✓</span>Recurrencia y casos base</div><div class="rubric-item"><span class="check">✓</span>Implementación y aplicación</div><div class="rubric-item"><span class="check">✓</span>Resultados y complejidad</div></div><p style="font-size:14px;margin-top:14px">En la sustentación cada integrante debe cerrar su bloque mencionando brevemente su aporte individual al repositorio.</p></div>
+  </div>
+</section>
+
+
+<div class="footer"><div class="progress-track"><div class="progress-bar" id="progress"></div></div><div class="counter" id="counter">01 / 11</div><div class="nav"><button type="button" id="prevBtn"><span>←</span> Anterior</button><button type="button" id="nextSlideBtn">Siguiente <span>→</span></button></div></div>
+
+</div></div>
+<script>
+(() => {
+  const DESIGN_W=1600, DESIGN_H=900;
+  const stage=document.getElementById('stage');
+  function fitStage(){const s=Math.min(window.innerWidth/DESIGN_W,window.innerHeight/DESIGN_H);stage.style.transform=`scale(${s})`;stage.style.left=((window.innerWidth-DESIGN_W*s)/2)+'px';stage.style.top=((window.innerHeight-DESIGN_H*s)/2)+'px';}
+  window.addEventListener('resize',fitStage); fitStage();
+
+  const slides=[...document.querySelectorAll('.slide')];
+  const progress=document.getElementById('progress'), counter=document.getElementById('counter');
+  const prevBtn=document.getElementById('prevBtn'), nextBtn=document.getElementById('nextSlideBtn');
+  let idx=0;
+  const q=new URLSearchParams(location.search).get('slide');
+  if(q){const n=Math.max(1,Math.min(slides.length,Number(q)||1));slides[0].classList.remove('active');idx=n-1;slides[idx].classList.add('active');}
+  function renderDeck(){progress.style.width=((idx+1)/slides.length*100)+'%';counter.textContent=String(idx+1).padStart(2,'0')+' / '+String(slides.length).padStart(2,'0');prevBtn.disabled=idx===0;nextBtn.disabled=idx===slides.length-1;}
+  function showSlide(next){next=Math.max(0,Math.min(slides.length-1,next));if(next===idx)return;stopAuto();const old=slides[idx],dir=next>idx?1:-1;old.classList.toggle('exit-left',dir>0);old.classList.remove('active');setTimeout(()=>old.classList.remove('exit-left'),520);idx=next;slides[idx].classList.add('active');renderDeck();}
+  prevBtn.addEventListener('click',()=>showSlide(idx-1));nextBtn.addEventListener('click',()=>showSlide(idx+1));
+  document.addEventListener('keydown',e=>{if(['INPUT','TEXTAREA','SELECT','BUTTON'].includes(e.target.tagName))return;if(['ArrowRight','PageDown',' '].includes(e.key)){e.preventDefault();showSlide(idx+1)}if(['ArrowLeft','PageUp'].includes(e.key)){e.preventDefault();showSlide(idx-1)}if(e.key==='Home')showSlide(0);if(e.key==='End')showSlide(slides.length-1);});
+  renderDeck();
+
+  // DP simulation
+  const amounts=[0,100,200,300,400,500,600];
+  const values=[0,Infinity,1,1,2,1,2];
+  const explanations=[
+    {state:'dp[0] = 0',best:'Caso base',status:'Para formar 0 ml no necesitamos ningún envase.',choices:[]},
+    {state:'dp[100] = ∞',best:'Sin combinación',status:'Ningún tamaño cabe de forma que deje un estado alcanzable. 100 ml permanece imposible.',choices:['200 > 100','300 > 100','500 > 100']},
+    {state:'dp[200] = 1',best:'200',status:'Probamos 200 ml: dp[0] + 1 = 1. Es la primera solución válida para 200 ml.',choices:['200 → dp[0]+1 = 1','300 > 200','500 > 200']},
+    {state:'dp[300] = 1',best:'300',status:'Probamos 300 ml: dp[0] + 1 = 1. Un solo envase forma exactamente 300 ml.',choices:['200 → dp[100] es ∞','300 → dp[0]+1 = 1','500 > 300']},
+    {state:'dp[400] = 2',best:'200 + 200',status:'Con 200 ml usamos dp[200] + 1 = 2. Las otras opciones no mejoran o no caben.',choices:['200 → dp[200]+1 = 2','300 → dp[100] es ∞','500 > 400']},
+    {state:'dp[500] = 1',best:'500',status:'El envase de 500 ml da dp[0] + 1 = 1 y supera cualquier combinación con más envases.',choices:['200 → dp[300]+1 = 2','300 → dp[200]+1 = 2','500 → dp[0]+1 = 1']},
+    {state:'dp[600] = 2',best:'300 + 300',status:'Probamos las opciones y el mínimo es 2. Con 300 ml usamos dp[300] + 1 = 2.',choices:['200 → dp[400]+1 = 3','300 → dp[300]+1 = 2','500 → dp[100] es ∞']}
+  ];
+  const row=document.getElementById('dpRow'), choiceStrip=document.getElementById('choiceStrip');
+  const stateEl=document.getElementById('demoState'), bestEl=document.getElementById('demoBest'), statusEl=document.getElementById('demoStatus'), stepEl=document.getElementById('demoStep');
+  const autoBtn=document.getElementById('autoBtn'), demoPrevBtn=document.getElementById('demoPrevBtn'), demoNextBtn=document.getElementById('demoNextBtn'), resetBtn=document.getElementById('resetBtn');
+  let dpStep=0, autoTimer=null;
+  function renderSim(){
+    row.innerHTML='';
+    amounts.forEach((a,i)=>{const d=document.createElement('div');d.className='dpcell';if(i<dpStep)d.classList.add(values[i]===Infinity?'inf':'done');if(i===dpStep)d.classList.add('current');if(i>dpStep)d.style.opacity='.36';d.innerHTML=`<div class="a">${a} ml</div><div class="v">${i<=dpStep?(values[i]===Infinity?'∞':values[i]):'·'}</div>`;row.appendChild(d)});
+    const e=explanations[dpStep];stateEl.textContent=e.state;bestEl.textContent=e.best;statusEl.textContent=e.status;
+    choiceStrip.innerHTML='';e.choices.forEach((c,j)=>{const s=document.createElement('div');s.className='choice'+(j===1&&dpStep===6?' on':'');s.textContent=c;choiceStrip.appendChild(s)});
+    stepEl.textContent=`Estado ${dpStep+1} de ${amounts.length}`;demoPrevBtn.disabled=dpStep===0;demoNextBtn.disabled=dpStep===amounts.length-1;
+  }
+  function nextSim(){if(dpStep<amounts.length-1){dpStep++;renderSim();return true}return false}
+  function prevSim(){if(dpStep>0){dpStep--;renderSim()}}
+  function resetSim(){stopAuto();dpStep=0;renderSim();autoBtn.textContent='▶ Auto lento'}
+  function startAuto(){if(autoTimer){stopAuto();return}if(dpStep===amounts.length-1)dpStep=0;renderSim();autoBtn.textContent='❚❚ Pausar';autoTimer=setInterval(()=>{if(!nextSim())stopAuto()},3500)}
+  function stopAuto(){if(autoTimer){clearInterval(autoTimer);autoTimer=null}if(autoBtn)autoBtn.textContent='▶ Auto lento'}
+  autoBtn.addEventListener('click',startAuto);demoPrevBtn.addEventListener('click',()=>{stopAuto();prevSim()});demoNextBtn.addEventListener('click',()=>{stopAuto();nextSim()});resetBtn.addEventListener('click',resetSim);renderSim();
+})();
+</script>
+</body>
+</html>
