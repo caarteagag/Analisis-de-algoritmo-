@@ -1,14 +1,13 @@
-
 # Taller Final - Análisis de Algoritmos
 
 ## Integrantes
 
-| Integrante | Usuario de GitHub | Ejercicios |
-| --- | --- | --- |
-| Ivan Morales Salgado | ivnmorales | 215, 179 |
-| Carlos Andres Arteaga | caarteagag | 743, 1584 |
-| Mauricio Agudelo | Agudelo-J-M | 72, 300 |
-
+| Integrante            | Usuario de GitHub | Ejercicios |
+| --------------------- | ----------------- | ---------- |
+| Ivan Morales Salgado  | ivnmorales        | 215, 179   |
+| Carlos Andres Arteaga | caarteagag        | 743, 1584  |
+| Mauricio Agudelo      | Agudelo-J-M       | 72, 300    |
+| Emanuel Cardona       | Rhast-dev         | 134, 79    |
 
 ## 215. Kth Largest Element in an Array
 
@@ -153,15 +152,15 @@ La respuesta es el **máximo** de la tabla y no `dp[n−1]`, porque la LIS más 
 Ejemplo (`[10, 9, 2, 5, 3, 7, 101, 18]`):
 
 | i | nums[i] | menores anteriores que puede extender | dp[i] |
-| --- | --- | --- | --- |
-| 0 | 10 | ninguno | 1 |
-| 1 | 9 | ninguno | 1 |
-| 2 | 2 | ninguno | 1 |
-| 3 | 5 | 2 (dp = 1) | 2 |
-| 4 | 3 | 2 (dp = 1) | 2 |
-| 5 | 7 | 2, 5, 3 (mejor dp = 2) | 3 |
-| 6 | 101 | todos (mejor: 7, dp = 3) | 4 |
-| 7 | 18 | 10, 9, 2, 5, 3, 7 (mejor: 7, dp = 3) | 4 |
+| - | ------- | ------------------------------------- | ----- |
+| 0 | 10      | ninguno                               | 1     |
+| 1 | 9       | ninguno                               | 1     |
+| 2 | 2       | ninguno                               | 1     |
+| 3 | 5       | 2 (dp = 1)                            | 2     |
+| 4 | 3       | 2 (dp = 1)                            | 2     |
+| 5 | 7       | 2, 5, 3 (mejor dp = 2)                | 3     |
+| 6 | 101     | todos (mejor: 7, dp = 3)              | 4     |
+| 7 | 18      | 10, 9, 2, 5, 3, 7 (mejor: 7, dp = 3)  | 4     |
 
 El máximo de la tabla es 4, por ejemplo `2, 3, 7, 101`.
 
@@ -172,3 +171,25 @@ Tiempo: Θ(n²), con n = `nums.length`, porque para cada `i` se recorren todos l
 Espacio: Θ(n), por el arreglo `dp`.
 
 ![Accepted 300](evidencias/longest-increasing-subsequence-accepted.png)
+
+## 7. [134. Gas Station](https://leetcode.com/problems/gas-station/)
+
+- **Autor:** Emanuel Cardona (`Rhast-dev`)
+- **Código:** [gas-station/solution.py](gas-station/solution.py)
+- **Familia:** Greedy
+- **Idea:** Primero se verifica que la suma total de `gas` sea mayor o igual a la de `cost` (de lo contrario es imposible completar el circuito y se retorna `-1`). En una sola pasada se acumula el balance neto `gas[i] - cost[i]`; cada vez que el tanque cae por debajo de `0` en una estación `i`, se descarta todo el tramo desde el inicio candidato actual hasta `i` (ninguna estación intermedia podría llegar más lejos, pues tenía tanque $\ge 0$ al ser alcanzada) y se fija el nuevo inicio candidato en `i + 1` con el tanque reiniciado en `0`.
+- **Complejidad:** Tiempo $\Theta(n)$ en una sola pasada y espacio extra $\Theta(1)$, donde $n$ es el número de estaciones.
+
+![Accepted — Gas Station](evidencias/gas-station-accepted.png)
+
+---
+
+## 8. [79. Word Search](https://leetcode.com/problems/word-search/)
+
+- **Autor:** Emanuel Cardona (`Rhast-dev`)
+- **Código:** [word-search/solution.py](word-search/solution.py)
+- **Familia:** Backtracking
+- **Idea:** Se recorre la grilla buscando celdas que coincidan con la primera letra de `word`. En cada paso recursivo se elige la celda actual marcándola temporalmente con `#` para evitar reutilizarla en el mismo camino, se exploran sus cuatro vecinos ortogonales buscando la siguiente letra y, si ninguna rama completa la palabra, se deshace la elección restaurando su carácter original antes de retroceder.
+- **Complejidad:** Tiempo $O(m \cdot n \cdot 4^L)$ en el peor caso y espacio $O(L)$ por la profundidad de la pila de recursión, donde $m \times n$ son las dimensiones de la grilla y $L$ es la longitud de `word`.
+
+![Accepted — Word Search](evidencias/word-search-accepted.png)
